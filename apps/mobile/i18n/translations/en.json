@@ -9,7 +9,8 @@
     "delete": "Process deleted",
     "edit": "Edit",
     "error": "Error",
-    "success": "Success"
+    "success": "Success",
+    "clickToOpen": "Click to open"
   },
   "onboarding": {
     "title1": "Spend Smarter",

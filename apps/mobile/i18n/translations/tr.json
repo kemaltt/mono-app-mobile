@@ -9,7 +9,8 @@
     "delete": "İşlem silindi",
     "edit": "Düzenle",
     "error": "Hata",
-    "success": "Başarılı"
+    "success": "Başarılı",
+    "clickToOpen": "Açmak için tıklayın"
   },
   "onboarding": {
     "title1": "Daha Akıllıca Harca",

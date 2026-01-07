@@ -9,7 +9,8 @@
     "delete": "Vorgang gelöscht",
     "edit": "Bearbeiten",
     "error": "Fehler",
-    "success": "Erfolgreich"
+    "success": "Erfolgreich",
+    "clickToOpen": "Klicken zum Öffnen"
   },
   "onboarding": {
     "title1": "Intelligenter Ausgeben",
