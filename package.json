@@ -1,0 +1,19 @@
+{
+  "name": "mono",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "ios": "cd apps/mobile && npm run ios",
+    "android": "cd apps/mobile && EXPO_ROUTER_APP_ROOT=app npm run android",
+    "web": "cd apps/mobile && npm run web",
+    "api": "cd apps/api && npx tsx src/index.ts"
+  },
+  "workspaces": [
+    "apps/*"
+  ],
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": ""
+}

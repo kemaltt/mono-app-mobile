@@ -1,0 +1,606 @@
+// @ts-nocheck
+import { View, Text, TextInput, TouchableOpacity, Platform, Alert, KeyboardAvoidingView, ScrollView, StyleSheet, Dimensions, ActivityIndicator } from 'react-native';
+import { useState } from 'react';
+import { useRouter } from 'expo-router';
+import { useAuth } from '../../context/auth';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
+import { useTheme } from '../../context/theme';
+import { Colors } from '../../constants/theme';
+
+import { API_URL } from '../../constants/Config';
+import * as ImagePicker from 'expo-image-picker';
+import * as DocumentPicker from 'expo-document-picker';
+
+const { width } = Dimensions.get('window');
+
+export default function AddTransactionScreen() {
+  const { t, i18n } = useTranslation();
+  const { colorScheme } = useTheme();
+  const colors = Colors[colorScheme];
+  const router = useRouter();
+  const { token } = useAuth();
+  
+  const [amount, setAmount] = useState('');
+  const [category, setCategory] = useState('');
+  const [description, setDescription] = useState('');
+  const [date, setDate] = useState(new Date());
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [type, setType] = useState<'INCOME' | 'EXPENSE'>('EXPENSE');
+  const [loading, setLoading] = useState(false);
+  const [focusedField, setFocusedField] = useState<string | null>(null);
+  const [attachment, setAttachment] = useState<{ uri: string, name: string, type: string } | null>(null);
+  const [uploadingAttachment, setUploadingAttachment] = useState(false);
+
+  const handlePickImage = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      quality: 0.8,
+    });
+
+    if (!result.canceled) {
+      const asset = result.assets[0];
+      setAttachment({
+        uri: asset.uri,
+        name: asset.fileName || 'receipt.jpg',
+        type: 'image/jpeg'
+      });
+    }
+  };
+
+  const handlePickDocument = async () => {
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: 'application/pdf',
+      });
+
+      if (!result.canceled) {
+        const asset = result.assets[0];
+        setAttachment({
+          uri: asset.uri,
+          name: asset.name,
+          type: asset.mimeType || 'application/pdf'
+        });
+      }
+    } catch (err) {
+      console.error('Error picking document:', err);
+    }
+  };
+
+  const uploadFile = async () => {
+    if (!attachment) return null;
+    
+    setUploadingAttachment(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', {
+        uri: attachment.uri,
+        name: attachment.name,
+        type: attachment.type,
+      } as any);
+
+      const response = await fetch(`${API_URL}/transactions/upload`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data',
+        },
+        body: formData,
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        return { url: data.attachmentUrl, type: data.attachmentType };
+      } else {
+        throw new Error(data.error || 'Upload failed');
+      }
+    } catch (error) {
+      console.error('Upload error:', error);
+      Alert.alert(t('common.error'), 'Failed to upload attachment');
+      return null;
+    } finally {
+      setUploadingAttachment(false);
+    }
+  };
+
+  const onChangeDate = (event: any, selectedDate?: Date) => {
+    const currentDate = selectedDate || date;
+    if (Platform.OS === 'android') {
+        setShowDatePicker(false);
+    }
+    setDate(currentDate);
+  };
+
+  const handleSubmit = async () => {
+    if (!amount || !category) {
+        Alert.alert(t('common.error'), t('add.errorFill'));
+        return;
+    }
+
+    setLoading(true);
+
+    try {
+        let attachmentData = null;
+        if (attachment) {
+            attachmentData = await uploadFile();
+            if (!attachmentData && attachment) {
+                setLoading(false);
+                return; // Upload failed, error already shown
+            }
+        }
+
+        const response = await fetch(`${API_URL}/transactions`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                amount: parseFloat(amount),
+                type,
+                category,
+                description,
+                date: date.toISOString(),
+                attachmentUrl: attachmentData?.url,
+                attachmentType: attachmentData?.type
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to create transaction');
+        }
+
+        router.replace('/(tabs)/home');
+
+    } catch (err) {
+        console.error(err);
+        Alert.alert(t('common.error'), t('add.errorSave'));
+    } finally {
+        setLoading(false);
+    }
+  };
+
+  const isIncome = type === 'INCOME';
+  const themeColor = isIncome ? (colorScheme === 'dark' ? '#059669' : '#00B495') : (colorScheme === 'dark' ? '#dc2626' : '#E4797F');
+  const activeBorderColor = colorScheme === 'dark' ? '#586EEF' : '#2D4BFF';
+  const defaultBorderColor = colorScheme === 'dark' ? '#334155' : '#E5E7EB';
+
+  return (
+    <View style={[styles.container, { backgroundColor: themeColor }]}>
+      {/* Header Section */}
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => router.back()} style={styles.iconButton}>
+          <Ionicons name="chevron-back" size={28} color="white" />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>{isIncome ? t('add.addIncome') : t('add.addExpense')}</Text>
+        <TouchableOpacity style={styles.iconButton}>
+          <Ionicons name="ellipsis-horizontal" size={24} color="white" />
+        </TouchableOpacity>
+      </View>
+
+      {/* Main Content (White Card) */}
+      <View style={[styles.whiteSection, { backgroundColor: colors.background }]}>
+        <KeyboardAvoidingView 
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={{ flex: 1 }}
+        >
+          <ScrollView 
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={styles.scrollContent}
+          >
+            {/* Form Fields */}
+            <View style={styles.form}>
+              
+              {/* Type Switcher */}
+              <View style={[styles.typeSwitcher, { backgroundColor: colorScheme === 'dark' ? '#1E293B' : '#F3F4F6' }]}>
+                <TouchableOpacity 
+                   style={[styles.typeBtn, isIncome && styles.typeBtnActiveIncome, isIncome && colorScheme === 'dark' && { backgroundColor: '#059669' }]}
+                   onPress={() => setType('INCOME')}
+                >
+                  <Text style={[styles.typeBtnText, isIncome && styles.typeBtnTextActive]}>{t('home.income')}</Text>
+                </TouchableOpacity>
+                <TouchableOpacity 
+                   style={[styles.typeBtn, !isIncome && styles.typeBtnActiveExpense, !isIncome && colorScheme === 'dark' && { backgroundColor: '#dc2626' }]}
+                   onPress={() => setType('EXPENSE')}
+                >
+                  <Text style={[styles.typeBtnText, !isIncome && styles.typeBtnTextActive]}>{t('home.expense')}</Text>
+                </TouchableOpacity>
+              </View>
+
+              {/* Name/Category */}
+              <View style={styles.inputGroup}>
+                <Text style={styles.label}>{t('add.nameLabel')}</Text>
+                <TextInput
+                    style={[
+                        styles.input, 
+                        { 
+                          borderColor: focusedField === 'name' ? activeBorderColor : defaultBorderColor,
+                          backgroundColor: colorScheme === 'dark' ? '#111827' : '#FFFFFF',
+                          color: colors.text
+                        }
+                    ]}
+                    placeholder={t('add.namePlaceholder')}
+                    placeholderTextColor="#9CA3AF"
+                    value={category}
+                    onChangeText={setCategory}
+                    onFocus={() => setFocusedField('name')}
+                    onBlur={() => setFocusedField(null)}
+                />
+              </View>
+
+              {/* Amount */}
+              <View style={styles.inputGroup}>
+                <Text style={styles.label}>{t('add.amountLabel')}</Text>
+                <View style={[
+                   styles.amountContainer,
+                   { 
+                     borderColor: focusedField === 'amount' ? activeBorderColor : defaultBorderColor,
+                     backgroundColor: colorScheme === 'dark' ? '#111827' : '#FFFFFF'
+                   }
+                ]}>
+                  <Text style={[styles.amountPrefix, { color: focusedField === 'amount' ? activeBorderColor : '#9CA3AF' }]}>$</Text>
+                  <TextInput
+                    style={[styles.amountInput, { color: focusedField === 'amount' ? activeBorderColor : colors.text }]}
+                    keyboardType="decimal-pad"
+                    value={amount}
+                    onChangeText={setAmount}
+                    placeholder="0.00"
+                    placeholderTextColor="#9CA3AF"
+                    onFocus={() => setFocusedField('amount')}
+                    onBlur={() => setFocusedField(null)}
+                  />
+                  {amount.length > 0 && (
+                    <TouchableOpacity onPress={() => setAmount('')}>
+                      <Text style={[styles.clearText, { color: focusedField === 'amount' ? activeBorderColor : '#9CA3AF' }]}>Clear</Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
+              </View>
+
+              {/* Date */}
+              <View style={styles.inputGroup}>
+                <Text style={styles.label}>{t('add.dateLabel')}</Text>
+                <TouchableOpacity 
+                    style={[
+                        styles.datePickerBtn,
+                        { 
+                          borderColor: focusedField === 'date' ? activeBorderColor : defaultBorderColor,
+                          backgroundColor: colorScheme === 'dark' ? '#111827' : '#FFFFFF'
+                        }
+                    ]} 
+                    onPress={() => {
+                        setShowDatePicker(true);
+                        setFocusedField('date');
+                    }}
+                >
+                    <Text style={[styles.datePickerText, { color: colors.text }]}>
+                        {date.toLocaleDateString(i18n.language, { 
+                            weekday: 'short',
+                            day: 'numeric', 
+                            month: 'short', 
+                            year: 'numeric'
+                        })}
+                    </Text>
+                    <Ionicons name="calendar" size={20} color={focusedField === 'date' ? activeBorderColor : "#9CA3AF"} />
+                </TouchableOpacity>
+                {showDatePicker && (
+                    <DateTimePicker
+                        value={date}
+                        mode="date"
+                        display="default"
+                        onChange={(e, d) => {
+                            onChangeDate(e, d);
+                            setFocusedField(null);
+                        }}
+                    />
+                )}
+              </View>
+
+              {/* Description */}
+              <View style={styles.inputGroup}>
+                <Text style={styles.label}>{t('add.descLabel')}</Text>
+                <TextInput
+                    style={[
+                        styles.input,
+                        { 
+                          borderColor: focusedField === 'desc' ? activeBorderColor : defaultBorderColor,
+                          backgroundColor: colorScheme === 'dark' ? '#111827' : '#FFFFFF',
+                          color: colors.text
+                        }
+                    ]}
+                    placeholder={t('add.descPlaceholder')}
+                    placeholderTextColor="#9CA3AF"
+                    value={description}
+                    onChangeText={setDescription}
+                    onFocus={() => setFocusedField('desc')}
+                    onBlur={() => setFocusedField(null)}
+                />
+              </View>
+
+              {/* Add Receipt */}
+              <View style={styles.inputGroup}>
+                <Text style={styles.label}>{t('add.receiptLabel')}</Text>
+                
+                {attachment ? (
+                  <View style={[styles.attachmentPreview, { backgroundColor: colorScheme === 'dark' ? '#1E293B' : '#F9FAFB', borderColor: defaultBorderColor }]}>
+                    <View style={styles.attachmentInfo}>
+                      <Ionicons 
+                        name={attachment.type.includes('pdf') ? "document-text" : "image"} 
+                        size={24} 
+                        color={themeColor} 
+                      />
+                      <Text style={[styles.attachmentName, { color: colors.text }]} numberOfLines={1}>
+                        {attachment.name}
+                      </Text>
+                    </View>
+                    <TouchableOpacity 
+                      onPress={() => setAttachment(null)}
+                      style={styles.removeAttachment}
+                    >
+                      <Ionicons name="close-circle" size={20} color="#EF4444" />
+                    </TouchableOpacity>
+                  </View>
+                ) : (
+                  <View style={styles.attachmentButtonsRow}>
+                    <TouchableOpacity 
+                      style={[styles.receiptBtn, { flex: 1, marginRight: 8, backgroundColor: colorScheme === 'dark' ? '#1E293B' : '#F9FAFB', borderColor: defaultBorderColor }]}
+                      onPress={handlePickImage}
+                      disabled={uploadingAttachment}
+                    >
+                       <Ionicons name="camera" size={20} color="#9CA3AF" />
+                       <Text style={styles.receiptSmallText}>{t('add.addPhoto')}</Text>
+                    </TouchableOpacity>
+                    
+                    <TouchableOpacity 
+                      style={[styles.receiptBtn, { flex: 1, backgroundColor: colorScheme === 'dark' ? '#1E293B' : '#F9FAFB', borderColor: defaultBorderColor }]}
+                      onPress={handlePickDocument}
+                      disabled={uploadingAttachment}
+                    >
+                       <Ionicons name="document-attach" size={20} color="#9CA3AF" />
+                       <Text style={styles.receiptSmallText}>{t('add.addPDF')}</Text>
+                    </TouchableOpacity>
+                  </View>
+                )}
+                  
+                  {uploadingAttachment && (
+                    <View style={styles.uploadingProgress}>
+                      <ActivityIndicator size="small" color={themeColor} />
+                      <Text style={styles.uploadingText}>{t('add.uploadingAttachment')}</Text>
+                    </View>
+                  )}
+              </View>
+
+              <TouchableOpacity 
+                onPress={handleSubmit}
+                disabled={loading}
+                style={[styles.saveButton, { backgroundColor: themeColor }]}
+              >
+                {loading ? (
+                    <ActivityIndicator color="white" />
+                ) : (
+                    <Text style={styles.saveButtonText}>{t('add.saveTransaction')}</Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </View>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  header: {
+    height: 140,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingTop: 40,
+  },
+  headerTitle: {
+    color: 'white',
+    fontSize: 20,
+    fontWeight: '700',
+  },
+  iconButton: {
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  whiteSection: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+    borderTopLeftRadius: 40,
+    borderTopRightRadius: 40,
+    marginTop: -20,
+  },
+  scrollContent: {
+    paddingTop: 30,
+    paddingBottom: 120, // Increased to clear the floating tab bar
+    paddingHorizontal: 25,
+  },
+  form: {
+    width: '100%',
+  },
+  typeSwitcher: {
+    flexDirection: 'row',
+    backgroundColor: '#F3F4F6',
+    borderRadius: 20,
+    padding: 4,
+    marginBottom: 30,
+  },
+  typeBtn: {
+    flex: 1,
+    paddingVertical: 10,
+    alignItems: 'center',
+    borderRadius: 16,
+  },
+  typeBtnActiveIncome: {
+    backgroundColor: '#00B495',
+  },
+  typeBtnActiveExpense: {
+    backgroundColor: '#E4797F',
+  },
+  typeBtnText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#6B7280',
+  },
+  typeBtnTextActive: {
+    color: '#FFFFFF',
+  },
+  inputGroup: {
+    marginBottom: 18, // Reduced spacing
+  },
+  label: {
+    fontSize: 11, // Slightly smaller
+    fontWeight: '700',
+    color: '#9CA3AF',
+    marginBottom: 8,
+    letterSpacing: 1,
+  },
+  input: {
+    width: '100%',
+    height: 48, // Reduced height
+    borderWidth: 1.5,
+    borderRadius: 12, // Slightly tighter corners
+    paddingHorizontal: 16,
+    fontSize: 15,
+    color: '#111827',
+    fontWeight: '500',
+    backgroundColor: '#FFFFFF',
+  },
+  amountContainer: {
+    width: '100%',
+    height: 48, // Reduced height
+    borderWidth: 1.5,
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#FFFFFF',
+  },
+  amountPrefix: {
+    fontSize: 16,
+    fontWeight: '700',
+    marginRight: 10,
+  },
+  amountInput: {
+    flex: 1,
+    fontSize: 16,
+    fontWeight: '700',
+    paddingVertical: 0,
+  },
+  clearText: {
+    fontWeight: '600',
+    fontSize: 13,
+  },
+  datePickerBtn: {
+    width: '100%',
+    height: 48, // Reduced height
+    borderWidth: 1.5,
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  datePickerText: {
+    fontSize: 15,
+    color: '#111827',
+    fontWeight: '500',
+  },
+  receiptBtn: {
+    width: '100%',
+    height: 48, // Reduced height
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    borderStyle: 'dashed',
+    borderRadius: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#F9FAFB',
+  },
+  receiptText: {
+    marginLeft: 10,
+    fontSize: 16,
+    color: '#9CA3AF',
+    fontWeight: '600',
+  },
+  receiptSmallText: {
+    marginLeft: 8,
+    fontSize: 14,
+    color: '#9CA3AF',
+    fontWeight: '600',
+  },
+  attachmentButtonsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  attachmentPreview: {
+    width: '100%',
+    height: 48,
+    borderWidth: 1.5,
+    borderColor: '#E5E7EB',
+    borderRadius: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    backgroundColor: '#F9FAFB',
+  },
+  attachmentInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  attachmentName: {
+    marginLeft: 10,
+    fontSize: 14,
+    color: '#374151',
+    fontWeight: '500',
+    flex: 1,
+  },
+  removeAttachment: {
+    padding: 4,
+  },
+  uploadingProgress: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  uploadingText: {
+    marginLeft: 8,
+    fontSize: 12,
+    color: '#6B7280',
+    fontStyle: 'italic',
+  },
+  saveButton: {
+    width: '100%',
+    height: 52, // Reduced height
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.1,
+    shadowRadius: 15,
+    elevation: 5,
+  },
+  saveButtonText: {
+    color: 'white',
+    fontSize: 16, // Slightly smaller
+    fontWeight: '700',
+  },
+});
