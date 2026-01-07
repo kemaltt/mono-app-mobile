@@ -165,5 +165,19 @@
     "saveTransaction": "Save Transaction",
     "errorFill": "Please fill in amount and category",
     "errorSave": "Could not save transaction"
+  },
+  "deleteAccount": {
+    "title": "Delete Your Account",
+    "undoTitle": "Recover Your Account",
+    "description": "If you continue, you will be able to use your account for 30 more days. You can cancel this request anytime in settings.",
+    "undoDescription": "Your account is currently scheduled for deletion. You can cancel this request and continue using your account normally.",
+    "startButton": "Start Deletion Process",
+    "undoButton": "Restore Account",
+    "confirmButton": "Confirm Deletion",
+    "confirmUndoButton": "Confirm Restoration",
+    "enterCode": "Enter Verification Code",
+    "successDelete": "Account scheduled for deletion in 30 days.",
+    "successUndo": "Deletion cancelled!",
+    "cancel": "Cancel"
   }
 }

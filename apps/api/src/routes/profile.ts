@@ -4,7 +4,7 @@ import { zValidator } from '@hono/zod-validator'
 import { z } from 'zod'
 import * as argon2 from 'argon2'
 import prisma from '../lib/prisma'
-import { sendPasswordChangeEmail } from '../lib/email'
+import { sendPasswordChangeEmail, sendDeleteRequestEmail, sendDeleteConfirmEmail, sendUndoDeleteEmail, sendUndoConfirmEmail } from '../lib/email'
 import fs from 'fs/promises'
 import path from 'path'
 import { randomUUID } from 'crypto'
@@ -165,6 +165,97 @@ profile.post('/avatar', async (c) => {
     console.error(error)
     return c.json({ error: 'Failed to upload avatar' }, 500)
   }
+})
+
+
+// REQUEST DELETE ACCOUNT
+profile.post('/delete-request', async (c) => {
+  const payload = c.get('jwtPayload')
+  const user = await prisma.user.findUnique({ where: { id: payload.id } })
+  if (!user) return c.json({ error: 'User not found' }, 404)
+
+  const code = generateCode()
+  await prisma.user.update({
+    where: { id: user.id },
+    data: { deleteCode: code }
+  })
+
+  await sendDeleteRequestEmail(user.email, code)
+  return c.json({ message: 'Verification code sent' })
+})
+
+// CONFIRM DELETE
+const confirmDeleteSchema = z.object({
+  code: z.string().length(6)
+})
+
+profile.post('/delete-confirm', zValidator('json', confirmDeleteSchema), async (c) => {
+  const payload = c.get('jwtPayload')
+  const { code } = c.req.valid('json')
+
+  const user = await prisma.user.findUnique({ where: { id: payload.id } })
+  if (!user) return c.json({ error: 'User not found' }, 404)
+
+  if (user.deleteCode !== code) {
+    return c.json({ error: 'Invalid verification code' }, 400)
+  }
+
+  await prisma.user.update({
+    where: { id: user.id },
+    data: {
+      status: 'CANCELED_REQUEST',
+      deleteRequestDate: new Date(),
+      deleteCode: null
+    }
+  })
+
+  await sendDeleteConfirmEmail(user.email)
+  return c.json({ message: 'Account scheduled for deletion' })
+})
+
+// REQUEST UNDO DELETE
+profile.post('/undo-delete-request', async (c) => {
+  const payload = c.get('jwtPayload')
+  const user = await prisma.user.findUnique({ where: { id: payload.id } })
+  if (!user) return c.json({ error: 'User not found' }, 404)
+
+  if (user.status !== 'CANCELED_REQUEST') {
+     return c.json({ error: 'Account is not pending deletion' }, 400)
+  }
+
+  const code = generateCode()
+  await prisma.user.update({
+    where: { id: user.id },
+    data: { deleteCode: code }
+  })
+
+  await sendUndoDeleteEmail(user.email, code)
+  return c.json({ message: 'Verification code sent' })
+})
+
+// CONFIRM UNDO DELETE
+profile.post('/undo-delete-confirm', zValidator('json', confirmDeleteSchema), async (c) => {
+  const payload = c.get('jwtPayload')
+  const { code } = c.req.valid('json')
+
+  const user = await prisma.user.findUnique({ where: { id: payload.id } })
+  if (!user) return c.json({ error: 'User not found' }, 404)
+
+  if (user.deleteCode !== code) {
+    return c.json({ error: 'Invalid verification code' }, 400)
+  }
+
+  await prisma.user.update({
+    where: { id: user.id },
+    data: {
+      status: 'ACTIVE',
+      deleteRequestDate: null,
+      deleteCode: null
+    }
+  })
+
+  await sendUndoConfirmEmail(user.email)
+  return c.json({ message: 'Account deletion cancelled' })
 })
 
 export default profile

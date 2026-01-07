@@ -165,5 +165,19 @@
     "saveTransaction": "İşlemi Kaydet",
     "errorFill": "Lütfen tutar ve kategori alanlarını doldurun",
     "errorSave": "İşlem kaydedilemedi"
+  },
+  "deleteAccount": {
+    "title": "Hesabını Sil",
+    "undoTitle": "Hesabını Kurtar",
+    "description": "Devam ederseniz, hesabınızı 30 gün boyunca kullanmaya devam edebilirsiniz. Bu talebi istediğiniz zaman ayarlardan iptal edebilirsiniz.",
+    "undoDescription": "Hesabınız şu anda silinmek üzere zamanlanmış durumda. Bu talebi iptal edebilir ve hesabınızı normal şekilde kullanmaya devam edebilirsiniz.",
+    "startButton": "Silme İşlemini Başlat",
+    "undoButton": "Hesabı Geri Yükle",
+    "confirmButton": "Silmeyi Onayla",
+    "confirmUndoButton": "Geri Yüklemeyi Onayla",
+    "enterCode": "Doğrulama Kodunu Gir",
+    "successDelete": "Hesap 30 gün içinde silinmek üzere zamanlandı.",
+    "successUndo": "Silme işlemi iptal edildi!",
+    "cancel": "İptal"
   }
 }

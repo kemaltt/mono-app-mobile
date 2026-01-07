@@ -6,16 +6,25 @@ import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../context/theme';
 import { Colors } from '../../constants/theme';
 
+import { useAuth } from '../../context/auth';
+
 export default function AccountScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const { colorScheme } = useTheme();
   const colors = Colors[colorScheme];
+  const { user } = useAuth();
+  
+  const isPendingDeletion = user?.status === 'CANCELED_REQUEST';
 
   const menuItems = [
     { icon: 'id-card-outline', label: t('profile.contactData'), onPress: () => {} },
     { icon: 'create-outline', label: t('profile.editAccount'), onPress: () => router.push('/profile/edit-account') },
-    { icon: 'trash-outline', label: t('profile.deleteAccount'), onPress: () => {} },
+    { 
+       icon: isPendingDeletion ? 'shield-checkmark-outline' : 'trash-outline', 
+       label: isPendingDeletion ? 'Cancel Deletion' : t('profile.deleteAccount'), 
+       onPress: () => router.push('/profile/delete-account') 
+    },
     { icon: 'star-outline', label: t('profile.plusMembership'), onPress: () => {} },
   ];
 

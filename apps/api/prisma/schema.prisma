@@ -21,6 +21,18 @@ model User {
   
   wallets   Wallet[]
   transactions Transaction[]
+
+  // Account Deletion Logic
+  status          UserStatus @default(ACTIVE)
+  deleteRequestDate DateTime?
+  deleteCode      String?    // OTP for deletion confirmation or undo
+}
+
+enum UserStatus {
+  ACTIVE
+  CANCELED_REQUEST // Soft deleted / Pending deletion (30 days window)
+  CANCELLED        // Fully cancelled/blocked
+  DELETED          // Hard deleted (optional)
 }
 
 model Wallet {

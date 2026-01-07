@@ -165,5 +165,19 @@
     "saveTransaction": "Transaktion speichern",
     "errorFill": "Bitte Betrag und Kategorie ausfüllen",
     "errorSave": "Transaktion konnte nicht gespeichert werden"
+  },
+  "deleteAccount": {
+    "title": "Konto löschen",
+    "undoTitle": "Konto wiederherstellen",
+    "description": "Wenn Sie fortfahren, können Sie Ihr Konto noch 30 Tage lang nutzen. Sie können diese Anfrage jederzeit in den Einstellungen widerrufen.",
+    "undoDescription": "Ihr Konto ist derzeit zur Löschung vorgemerkt. Sie können diese Anfrage stornieren und Ihr Konto normal weiterverwenden.",
+    "startButton": "Kündigungsprozess starten",
+    "undoButton": "Konto behalten",
+    "confirmButton": "Kündigung bestätigen",
+    "confirmUndoButton": "Kündigung widerrufen",
+    "enterCode": "Verifizierungscode eingeben",
+    "successDelete": "Konto zur Löschung in 30 Tagen vorgemerkt.",
+    "successUndo": "Löschung storniert!",
+    "cancel": "Abbrechen"
   }
 }

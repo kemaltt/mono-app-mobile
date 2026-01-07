@@ -194,6 +194,26 @@ auth.post('/login', zValidator('json', loginSchema, (result, c) => {
       }, 403)
     }
 
+    // Check Account Status
+    if (user.status === 'CANCELLED' || user.status === 'DELETED') {
+        return c.json({ error: 'This account has been deactivated.' }, 403)
+    }
+
+    // Lazy 30-day deletion check
+    if (user.status === 'CANCELED_REQUEST' && user.deleteRequestDate) {
+        const thirtyDaysAgo = new Date()
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
+        
+        if (user.deleteRequestDate < thirtyDaysAgo) {
+            // Time expires, cancel account
+            await prisma.user.update({
+                where: { id: user.id },
+                data: { status: 'CANCELLED' }
+            })
+            return c.json({ error: 'Account deletion process completed. Account deactivated.' }, 403)
+        }
+    }
+
     const validPassword = await argon2.verify(user.password, password)
     if (!validPassword) {
       return c.json({ error: 'Invalid credentials' }, 401)
@@ -203,7 +223,14 @@ auth.post('/login', zValidator('json', loginSchema, (result, c) => {
 
     return c.json({ 
         token, 
-        user: { id: user.id, email: user.email, firstName: user.firstName, lastName: user.lastName, avatarUrl: user.avatarUrl } 
+        user: { 
+            id: user.id, 
+            email: user.email, 
+            firstName: user.firstName, 
+            lastName: user.lastName, 
+            avatarUrl: user.avatarUrl,
+            status: user.status 
+        } 
     })
   } catch (error) {
     console.error(error)
