@@ -79,20 +79,45 @@ export default function AddTransactionScreen() {
 
     setIsScanning(true);
     
-    // NOTE: In a production environment, we would upload this image to our API 
-    // and use an AI model (like Google Vision, AWS Textract, or Gemini Pro Vision)
-    // to extract the text. Here we simulate the AI extraction process.
-    setTimeout(() => {
-        setAmount('42.50');
-        setCategory('Market');
-        setDescription('Migros Shopping');
-        setIsScanning(false);
-        Toast.show({
-            type: 'success',
-            text1: t('add.scanSuccess'),
-            text2: '$42.50 detected'
+    try {
+        const formData = new FormData();
+        formData.append('file', {
+            uri: asset.uri,
+            name: asset.fileName || 'scan_receipt.jpg',
+            type: 'image/jpeg'
+        } as any);
+
+        const response = await fetch(`${API_URL}/transactions/scan`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'multipart/form-data',
+            },
+            body: formData,
         });
-    }, 2500);
+
+        const data = await response.json();
+
+        if (response.ok) {
+            setAmount(data.amount?.toString() || '');
+            setCategory(data.category || '');
+            setDescription(data.description || '');
+            if (data.date) setDate(new Date(data.date));
+            
+            Toast.show({
+                type: 'success',
+                text1: t('add.scanSuccess'),
+                text2: `${data.amount} detected`
+            });
+        } else {
+            throw new Error(data.error || 'AI scan failed');
+        }
+    } catch (e) {
+        console.error('Scan error:', e);
+        Alert.alert(t('common.error'), 'Could not extract data from receipt');
+    } finally {
+        setIsScanning(false);
+    }
   };
 
   const handlePickDocument = async () => {

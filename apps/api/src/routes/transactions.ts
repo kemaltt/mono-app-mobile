@@ -3,6 +3,7 @@ import { zValidator } from '@hono/zod-validator'
 import { z } from 'zod'
 import { verify } from 'hono/jwt'
 import prisma from '../lib/prisma'
+import { GoogleGenerativeAI } from '@google/generative-ai'
 
 const JWT_SECRET = process.env.JWT_SECRET || 'supersecretkeyshouldbehidden'
 
@@ -91,6 +92,61 @@ app.post('/upload', async (c) => {
     } catch (error) {
         console.error('Upload error:', error)
         return c.json({ error: 'Failed to upload attachment' }, 500)
+    }
+})
+
+// SCAN RECEIPT WITH AI (GEMINI)
+app.post('/scan', async (c) => {
+    const body = await c.req.parseBody()
+    const file = body['file'] as File
+
+    if (!file) {
+        return c.json({ error: 'No file provided' }, 400)
+    }
+
+    const apiKey = process.env.GEMINI_API_KEY
+    if (!apiKey) {
+        return c.json({ error: 'Gemini API Key is not configured on server' }, 500)
+    }
+
+    try {
+        const genAI = new GoogleGenerativeAI(apiKey)
+        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" })
+
+        const arrayBuffer = await file.arrayBuffer()
+        const base64Data = Buffer.from(arrayBuffer).toString('base64')
+
+        const prompt = `Analyze this receipt and extract the following information in JSON format:
+        - amount (numeric value only)
+        - category (choose one: Food, Market, Transport, Shopping, Subscriptions, Health, Entertainment, Others)
+        - description (short name of the store or item)
+        - date (ISO format if found, otherwise current date)
+        
+        Only return the JSON object, nothing else.`
+
+        const result = await model.generateContent([
+            prompt,
+            {
+                inlineData: {
+                    data: base64Data,
+                    mimeType: file.type
+                }
+            }
+        ])
+
+        const response = await result.response
+        const text = response.text()
+        
+        // Clean the response in case Gemini adds markdown code blocks
+        const jsonMatch = text.match(/\{[\s\S]*\}/)
+        const jsonStr = jsonMatch ? jsonMatch[0] : text
+        const data = JSON.parse(jsonStr)
+
+        return c.json(data)
+
+    } catch (error) {
+        console.error('Scan error:', error)
+        return c.json({ error: 'Failed to scan receipt with AI' }, 500)
     }
 })
 
