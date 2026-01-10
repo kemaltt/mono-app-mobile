@@ -310,6 +310,98 @@ app.get("/stats", async (c) => {
   }
 });
 
+// GET /stats/categories - Breakdown by category
+app.get("/stats/categories", async (c) => {
+  const user = c.get("user");
+  const now = new Date();
+  const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+  try {
+    const categories = await prisma.transaction.groupBy({
+      by: ["category"],
+      where: {
+        userId: user.id,
+        type: "EXPENSE",
+        date: { gte: firstDayOfMonth },
+      },
+      _sum: { amount: true },
+    });
+
+    const formattedData = categories.map((cat) => ({
+      category: cat.category,
+      amount: Number(cat._sum.amount || 0),
+    }));
+
+    return c.json({ categories: formattedData });
+  } catch (error) {
+    console.error(error);
+    return c.json({ error: "Failed to fetch category stats" }, 500);
+  }
+});
+
+// GET /stats/ai-summary - AI personalized insights
+app.get("/stats/ai-summary", async (c) => {
+  const user = c.get("user");
+  const lang = c.req.query("lang") || "en";
+  const apiKey = process.env.GEMINI_API_KEY;
+
+  if (!apiKey) return c.json({ error: "AI not configured" }, 500);
+
+  try {
+    const now = new Date();
+    const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+    const transactions = await prisma.transaction.findMany({
+      where: {
+        userId: user.id,
+        date: { gte: firstDayOfMonth },
+      },
+      select: {
+        amount: true,
+        type: true,
+        category: true,
+        description: true,
+        date: true,
+      },
+    });
+
+    if (transactions.length === 0) {
+      return c.json({ summary: "No enough data for AI analysis yet." });
+    }
+
+    const genAI = new GoogleGenerativeAI(apiKey);
+    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+
+    const totalIncome = transactions
+      .filter((t) => t.type === "INCOME")
+      .reduce((sum, t) => sum + Number(t.amount), 0);
+    const totalExpense = transactions
+      .filter((t) => t.type === "EXPENSE")
+      .reduce((sum, t) => sum + Number(t.amount), 0);
+
+    const prompt = `Analyze these transactions for ${
+      user.name
+    } and provide a very short, friendly, and actionable financial insight in ${lang}.
+    Transactions this month: ${JSON.stringify(transactions)}
+    Total Income: ${totalIncome}
+    Total Expense: ${totalExpense}
+    
+    Rules:
+    - Keep it under 3 sentences.
+    - Be motivating and helpful.
+    - Use ${lang}.
+    - NO markdown. Just plain text.`;
+
+    const result = await model.generateContent(prompt);
+    const summary = result.response.text();
+
+    return c.json({ summary });
+  } catch (error) {
+    console.error(error);
+    return c.json({ error: "AI summary failed" }, 500);
+  }
+});
+
 // GET /:id - Get single transaction
 app.get("/:id", async (c) => {
   const user = c.get("user");

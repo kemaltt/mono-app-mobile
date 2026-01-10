@@ -5,7 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useState, useCallback, useEffect } from 'react';
 import { useAuth } from '../../context/auth';
 import { useFocusEffect, useRouter } from 'expo-router';
-import { LineChart, BarChart } from "react-native-gifted-charts";
+import { LineChart, BarChart, PieChart } from "react-native-gifted-charts";
 import { API_URL } from '../../constants/Config';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../context/theme';
@@ -32,34 +32,62 @@ export default function StatisticsScreen() {
   const [chartType, setChartType] = useState('line'); // 'line' or 'bar'
   const [transactions, setTransactions] = useState([]);
   const [statsData, setStatsData] = useState([]);
+  const [categoryData, setCategoryData] = useState([]);
+  const [aiSummary, setAiSummary] = useState('');
+  const [loadingSummary, setLoadingSummary] = useState(false);
   const [showTypeDropdown, setShowTypeDropdown] = useState(false);
   const [selectedTransactionId, setSelectedTransactionId] = useState<string | null>(null);
 
   const fetchData = useCallback(async () => {
     try {
       if (!token) return;
+      
+      // Fetch Basic Stats
+      const statsRes = await fetch(`${API_URL}/transactions/stats?type=${selectedType.toUpperCase()}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const statsResult = await statsRes.json();
+      if (statsResult.chartData) {
+        setStatsData(statsResult.chartData.map(item => ({
+          value: Number(item.value) || 0,
+          label: item.label,
+        })));
+      }
+
+      // Fetch Category Breakdown
+      const catRes = await fetch(`${API_URL}/transactions/stats/categories`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const catData = await catRes.json();
+      if (catData.categories) {
+        const colors_list = ['#586EEF', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#6366F1'];
+        setCategoryData(catData.categories.map((c, i) => ({
+          value: c.amount,
+          text: c.category,
+          color: colors_list[i % colors_list.length],
+        })));
+      }
+
+      // Fetch AI Summary
+      setLoadingSummary(true);
+      const aiRes = await fetch(`${API_URL}/transactions/stats/ai-summary?lang=${i18n.language}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const aiData = await aiRes.json();
+      setAiSummary(aiData.summary || '');
+      setLoadingSummary(false);
+
       const transRes = await fetch(`${API_URL}/transactions?limit=10`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const transData = await transRes.json();
       setTransactions(transData.transactions || []);
 
-      const statsRes = await fetch(`${API_URL}/transactions/stats?type=${selectedType.toUpperCase()}`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      const statsResult = await statsRes.json();
-      
-      if (statsResult.chartData) {
-        const formattedData = statsResult.chartData.map((item) => ({
-          value: Number(item.value) || 0,
-          label: item.label,
-        }));
-        setStatsData(formattedData);
-      }
     } catch (error) {
       console.error(error);
+      setLoadingSummary(false);
     }
-  }, [token, selectedType]);
+  }, [token, selectedType, i18n.language]);
 
   useFocusEffect(
     useCallback(() => {
@@ -129,6 +157,21 @@ export default function StatisticsScreen() {
               </View>
             )}
           </View>
+        </View>
+
+        {/* AI Insight Card */}
+        <View style={[styles.aiCard, { backgroundColor: colorScheme === 'dark' ? '#1E293B' : '#F5F3FF', borderColor: colorScheme === 'dark' ? '#334155' : '#DDD6FE' }]}>
+            <View style={styles.aiHeader}>
+                <Ionicons name="sparkles" size={18} color="#8B5CF6" />
+                <Text style={styles.aiTitle}>{t('statistics.aiInsights')}</Text>
+            </View>
+            {loadingSummary ? (
+                <ActivityIndicator size="small" color="#8B5CF6" style={{ marginTop: 10 }} />
+            ) : (
+                <Text style={[styles.aiText, { color: colors.text }]}>
+                    {aiSummary || t('statistics.aiNoData')}
+                </Text>
+            )}
         </View>
 
         {/* Dynamic Chart Display */}
@@ -214,6 +257,46 @@ export default function StatisticsScreen() {
             <View style={styles.loadingChart}><ActivityIndicator color="#4361EE" /></View>
           )}
         </View>
+
+        {/* Category Pie Chart Breakdown */}
+        {categoryData.length > 0 && (
+            <View style={styles.pieContainer}>
+                <Text style={[styles.sectionTitle, { color: colors.text, marginBottom: 20 }]}>
+                    {t('statistics.categoryBreakdown')}
+                </Text>
+                <View style={styles.pieRow}>
+                    <PieChart
+                        data={categoryData}
+                        donut
+                        showGradient
+                        sectionAutoFocus
+                        radius={70}
+                        innerRadius={50}
+                        innerCircleColor={colorScheme === 'dark' ? '#111827' : 'white'}
+                        centerLabelComponent={() => (
+                            <View style={{justifyContent: 'center', alignItems: 'center'}}>
+                                <Text style={{fontSize: 16, color: colors.text, fontWeight: 'bold'}}>
+                                    {categoryData.length}
+                                </Text>
+                                <Text style={{fontSize: 10, color: '#9CA3AF'}}>
+                                    {t('wallet.categories')}
+                                </Text>
+                            </View>
+                        )}
+                    />
+                    <View style={styles.legendContainer}>
+                        {categoryData.slice(0, 4).map((item, index) => (
+                            <View key={index} style={styles.legendItem}>
+                                <View style={[styles.legendDot, { backgroundColor: item.color }]} />
+                                <Text style={[styles.legendText, { color: colors.text }]} numberOfLines={1}>
+                                    {item.text}
+                                </Text>
+                            </View>
+                        ))}
+                    </View>
+                </View>
+            </View>
+        )}
 
         {/* Top Transactions Section */}
         <View style={styles.sectionHeader}>
@@ -518,5 +601,58 @@ const styles = StyleSheet.create({
     color: '#9CA3AF',
     fontSize: 14,
     fontWeight: '500',
-  }
+  },
+  aiCard: {
+    marginHorizontal: 20,
+    marginTop: 20,
+    padding: 16,
+    borderRadius: 20,
+    borderWidth: 1,
+  },
+  aiHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 8,
+  },
+  aiTitle: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: '#8B5CF6',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  aiText: {
+    fontSize: 14,
+    lineHeight: 20,
+    fontWeight: '500',
+  },
+  pieContainer: {
+    marginTop: 40,
+    marginHorizontal: 20,
+  },
+  pieRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  legendContainer: {
+    flex: 1,
+    marginLeft: 20,
+    gap: 12,
+  },
+  legendItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  legendDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+  },
+  legendText: {
+    fontSize: 13,
+    fontWeight: '600',
+  },
 });

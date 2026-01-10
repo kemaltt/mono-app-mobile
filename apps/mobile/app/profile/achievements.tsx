@@ -10,7 +10,7 @@ import { useAuth } from '../../context/auth';
 import { API_URL } from '../../constants/Config';
 
 export default function AchievementsScreen() {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const router = useRouter();
     const { colorScheme } = useTheme();
     const colors = Colors[colorScheme];
@@ -66,7 +66,7 @@ export default function AchievementsScreen() {
                 </Text>
                 {item.isUnlocked && (
                     <Text style={styles.unlockedText}>
-                        {t('achievements.unlockedAt')}: {new Date(item.unlockedAt).toLocaleDateString()}
+                        {t('achievements.unlockedAt')}: {new Date(item.unlockedAt).toLocaleDateString(i18n.language, { month: 'short', day: 'numeric', year: 'numeric' })}
                     </Text>
                 )}
             </View>

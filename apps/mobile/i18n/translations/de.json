@@ -120,7 +120,10 @@
     "year": "Jahr",
     "topSpending": "Top Ausgaben",
     "topIncome": "Top Einnahmen",
-    "noTransactions": "Keine Transaktionen für diesen Typ gefunden."
+    "noTransactions": "Keine Transaktionen für diesen Typ gefunden.",
+    "categoryBreakdown": "Kategorien-Übersicht",
+    "aiInsights": "KI-Analysen",
+    "aiNoData": "Fügen Sie weitere Transaktionen hinzu, um personalisierte Einblicke zu erhalten!"
   },
   "wallet": {
     "title": "Budgets",
@@ -145,6 +148,7 @@
     "level": "Level",
     "xp": "XP",
     "badges": "Abzeichen",
+    "categories": "Kategorien",
     "saverTitle": "Konsequenter Sparer",
     "saverDesc": "Bleiben Sie 30 Tage lang innerhalb Ihres Budgets",
     "plannerTitle": "Meisterplaner",
@@ -252,6 +256,8 @@
     "badge_tx_master": "Transaktionsmaster",
     "desc_tx_master": "10 Transaktionen erstellt",
     "badge_budget_planner": "Budget-Held",
-    "desc_budget_planner": "3 verschiedene Budgets erstellt"
+    "desc_budget_planner": "3 verschiedene Budgets erstellt",
+    "badge_ai_scanner": "KI-Visionär",
+    "desc_ai_scanner": "Haben Ihren ersten Beleg mit Gemini KI gescannt"
   }
 }

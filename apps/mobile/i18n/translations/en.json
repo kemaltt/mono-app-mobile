@@ -120,7 +120,10 @@
     "year": "Year",
     "topSpending": "Top Spending",
     "topIncome": "Top Income",
-    "noTransactions": "No transactions found for this type."
+    "noTransactions": "No transactions found for this type.",
+    "categoryBreakdown": "Category Breakdown",
+    "aiInsights": "AI Insights",
+    "aiNoData": "Add more transactions to get personalized insights!"
   },
   "wallet": {
     "title": "Budgets",
@@ -145,6 +148,7 @@
     "level": "Level",
     "xp": "XP",
     "badges": "Badges",
+    "categories": "Categories",
     "saverTitle": "Consistent Saver",
     "saverDesc": "Keep within your budget for 30 days",
     "plannerTitle": "Master Planner",
@@ -252,6 +256,8 @@
     "badge_tx_master": "Transaction Master",
     "desc_tx_master": "Created 10 transactions",
     "badge_budget_planner": "Budget Hero",
-    "desc_budget_planner": "Created 3 different budgets"
+    "desc_budget_planner": "Created 3 different budgets",
+    "badge_ai_scanner": "AI Visionary",
+    "desc_ai_scanner": "Scanned your first receipt with Gemini AI"
   }
 }

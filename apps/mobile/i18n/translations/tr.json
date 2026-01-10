@@ -120,7 +120,10 @@
     "year": "Yıl",
     "topSpending": "En Çok Harcama",
     "topIncome": "En Çok Gelir",
-    "noTransactions": "Bu tür için işlem bulunamadı."
+    "noTransactions": "Bu tür için işlem bulunamadı.",
+    "categoryBreakdown": "Kategori Dağılımı",
+    "aiInsights": "Yapay Zeka Analizi",
+    "aiNoData": "Kişiselleştirilmiş analizler için daha fazla işlem ekleyin!"
   },
   "wallet": {
     "title": "Bütçeler",
@@ -145,6 +148,7 @@
     "level": "Seviye",
     "xp": "XP",
     "badges": "Rozetler",
+    "categories": "Kategori",
     "saverTitle": "İstikrarlı Tasarrufçu",
     "saverDesc": "30 gün boyunca bütçenize sadık kalın",
     "plannerTitle": "Usta Planlayıcı",
@@ -252,6 +256,8 @@
     "badge_tx_master": "İşlem Ustası",
     "desc_tx_master": "Toplam 10 işlem gerçekleştirdin",
     "badge_budget_planner": "Bütçe Kahramanı",
-    "desc_budget_planner": "3 farklı bütçe oluşturdun"
+    "desc_budget_planner": "3 farklı bütçe oluşturdun",
+    "badge_ai_scanner": "Yapay Zeka Vizyoneri",
+    "desc_ai_scanner": "İlk fişini Gemini AI ile başarıyla taradın"
   }
 }
