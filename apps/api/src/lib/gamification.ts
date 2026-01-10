@@ -1,15 +1,19 @@
 import prisma from "./prisma";
 
-export const addXP = async (userId: string, amount: number) => {
+export const addXP = async (
+  userId: string,
+  amount: number,
+  shouldCheckAchievements = true
+) => {
   try {
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      select: { xp: true, level: true },
+    const dbUser: any = await prisma.user.findUnique({
+      where: { id: userId }, // Changed from user.id to userId to maintain syntactic correctness
+      select: { xp: true, level: true }, // Kept original select to maintain logical correctness for XP calculation
     });
 
-    if (!user) return;
+    if (!dbUser) return { xp: 0, level: 1, unlockedAchievements: [] }; // Changed 'user' to 'dbUser'
 
-    const newXP = user.xp + amount;
+    const newXP = dbUser.xp + amount; // Changed 'user' to 'dbUser'
     const newLevel = Math.floor(newXP / 100) + 1;
 
     await prisma.user.update({
@@ -17,64 +21,82 @@ export const addXP = async (userId: string, amount: number) => {
       data: {
         xp: newXP,
         level: newLevel,
-      },
+      } as any,
     });
 
-    // Handle Achievements check here later
-    await checkAchievements(userId);
+    let unlockedAchievements: any[] = [];
+    if (shouldCheckAchievements) {
+      unlockedAchievements = await checkAchievements(userId);
+    }
 
-    return { xp: newXP, level: newLevel };
+    return { xp: newXP, level: newLevel, unlockedAchievements };
   } catch (error) {
     console.error("XP Gain Error:", error);
+    return { xp: 0, level: 1, unlockedAchievements: [] };
   }
 };
 
 export const checkAchievements = async (userId: string) => {
-  // Simple check for now
+  const newlyUnlocked: any[] = [];
   try {
     const txCount = await prisma.transaction.count({ where: { userId } });
 
     if (txCount >= 1) {
-      await unlockAchievement(userId, "first_tx");
+      const ach = await unlockAchievement(userId, "first_tx");
+      if (ach) newlyUnlocked.push(ach);
     }
     if (txCount >= 10) {
-      await unlockAchievement(userId, "tx_master");
+      const ach = await unlockAchievement(userId, "tx_master");
+      if (ach) newlyUnlocked.push(ach);
     }
 
     const budgetCount = await prisma.budget.count({ where: { userId } });
     if (budgetCount >= 3) {
-      await unlockAchievement(userId, "budget_planner");
+      const ach = await unlockAchievement(userId, "budget_planner");
+      if (ach) newlyUnlocked.push(ach);
     }
+
+    // Check for AI scans (transactions that were scanning via AI often have attachmentUrl but we can also check if any scan happened)
+    // For now, we manually trigger ai_scanner in the /scan route to be 100% accurate.
+    return newlyUnlocked;
   } catch (e) {
     console.error("Achievement check error:", e);
+    return [];
   }
 };
 
 export const unlockAchievement = async (userId: string, key: string) => {
   try {
-    const achievement = await prisma.achievement.findUnique({ where: { key } });
-    if (!achievement) return;
+    const achievement = await prisma.achievement.findUnique({
+      where: { key: key },
+    });
+    if (!achievement) return null;
 
     const existing = await prisma.userAchievement.findUnique({
       where: {
         userId_achievementId: {
-          userId,
+          userId: userId,
           achievementId: achievement.id,
         },
       },
     });
 
     if (!existing) {
-      await prisma.userAchievement.create({
+      const unlocked = await prisma.userAchievement.create({
         data: {
-          userId,
+          userId: userId,
           achievementId: achievement.id,
         },
+        include: { achievement: true },
       });
-      // Award extra XP for achievement
-      await addXP(userId, achievement.xpReward);
+
+      // Award extra XP for achievement without re-checking (recursion fix)
+      await addXP(userId, achievement.xpReward, false);
+      return unlocked.achievement;
     }
+    return null;
   } catch (error) {
-    // Already unlocked or other error
+    console.error("Unlock Error:", error);
+    return null;
   }
 };

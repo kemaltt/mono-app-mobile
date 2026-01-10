@@ -10,7 +10,7 @@ import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../context/theme';
 import { Colors } from '../../constants/theme';
 import BudgetCard from '../../components/BudgetCard';
-import Toast from 'react-native-toast-message';
+import { useGamification } from '../../context/gamification';
 
 export default function WalletScreen() {
   const { t, i18n } = useTranslation();
@@ -18,6 +18,7 @@ export default function WalletScreen() {
   const colors = Colors[colorScheme];
   const router = useRouter();
   const { token } = useAuth();
+  const { showXP, showAchievement } = useGamification();
   const [dashboard, setDashboard] = useState(null);
   const [budgets, setBudgets] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
@@ -89,6 +90,14 @@ export default function WalletScreen() {
               setModalVisible(false);
               setNewName(''); setNewAmount(''); setNewCategory('');
               fetchData();
+              
+              // Show Gamification Rewards
+              if (data.xp) showXP(data.xp);
+              if (data.unlockedAchievements && data.unlockedAchievements.length > 0) {
+                  data.unlockedAchievements.forEach((ach: any) => showAchievement(ach));
+              }
+
+              // Keep successVisible for short feedback if needed or remove it
               setSuccessVisible(true);
               setTimeout(() => setSuccessVisible(false), 2000); // Auto hide
               // Toast.show({type: 'success', text1: 'Success', text2: 'Budget created'});

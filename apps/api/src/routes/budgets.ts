@@ -102,9 +102,9 @@ app.post("/", zValidator("json", createBudgetSchema), async (c) => {
     });
 
     // Award XP for creating a budget
-    await addXP(user.id, 15);
+    const reward = await addXP(user.id, 15);
 
-    return c.json(budget, 201);
+    return c.json({ ...budget, ...reward }, 201);
   } catch (e) {
     console.error(e);
     return c.json({ error: "Failed to create budget" }, 500);

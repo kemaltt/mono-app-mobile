@@ -4,7 +4,7 @@ import { z } from "zod";
 import { verify } from "hono/jwt";
 import prisma from "../lib/prisma";
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { addXP } from "../lib/gamification";
+import { addXP, unlockAchievement } from "../lib/gamification";
 
 const JWT_SECRET = process.env.JWT_SECRET || "supersecretkeyshouldbehidden";
 
@@ -176,9 +176,13 @@ app.post("/scan", async (c) => {
     const data = JSON.parse(jsonStr);
 
     // Award XP for scanning
-    await addXP(user.id, 25);
+    const reward = await addXP(user.id, 25);
+    const achievementAward = await unlockAchievement(user.id, "ai_scanner");
 
-    return c.json(data);
+    const unlockedAchievements = [...(reward?.unlockedAchievements || [])];
+    if (achievementAward) unlockedAchievements.push(achievementAward);
+
+    return c.json({ ...data, ...reward, unlockedAchievements });
   } catch (error) {
     console.error("Scan error:", error);
     return c.json({ error: "Failed to scan receipt with AI" }, 500);
@@ -349,9 +353,9 @@ app.get("/stats/ai-summary", async (c) => {
 
   try {
     // 1. Check DB Cache
-    const dbUser = await prisma.user.findUnique({
+    const dbUser: any = await prisma.user.findUnique({
       where: { id: user.id },
-      select: { aiSummary: true, aiSummaryAt: true, firstName: true },
+      select: { aiSummary: true, aiSummaryAt: true, firstName: true } as any,
     });
 
     const now = new Date();
@@ -414,7 +418,7 @@ app.get("/stats/ai-summary", async (c) => {
         data: {
           aiSummary: summary,
           aiSummaryAt: now,
-        },
+        } as any,
       });
 
       return c.json({ summary });
@@ -482,7 +486,7 @@ app.post("/", zValidator("json", createTransactionSchema), async (c) => {
 
     // Create transaction in transaction
     const result = await prisma.$transaction(async (tx) => {
-      const t = await tx.transaction.create({
+      const transaction = await tx.transaction.create({
         data: {
           userId: user.id,
           walletId: walletId!,
@@ -490,9 +494,9 @@ app.post("/", zValidator("json", createTransactionSchema), async (c) => {
           type: body.type,
           category: body.category,
           description: body.description,
+          date: body.date ? new Date(body.date) : new Date(),
           attachmentUrl: body.attachmentUrl,
           attachmentType: body.attachmentType,
-          date: body.date ? new Date(body.date) : new Date(),
         },
       });
 
@@ -509,13 +513,13 @@ app.post("/", zValidator("json", createTransactionSchema), async (c) => {
         });
       }
 
-      return t;
+      return transaction;
     });
 
     // Award XP for creating transaction
-    await addXP(user.id, 10);
+    const reward = await addXP(user.id, 10);
 
-    return c.json(result, 201);
+    return c.json({ ...result, ...reward }, 201);
   } catch (error) {
     console.error(error);
     return c.json({ error: "Failed to create transaction" }, 500);

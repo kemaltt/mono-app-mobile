@@ -21,6 +21,7 @@ import { useAuth } from '../../context/auth';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
+import { useGamification } from '../../context/gamification';
 import { useTheme } from '../../context/theme';
 import { Colors } from '../../constants/theme';
 
@@ -37,6 +38,7 @@ export default function AddTransactionScreen() {
   const colors = Colors[colorScheme];
   const router = useRouter();
   const { token } = useAuth();
+  const { showXP, showAchievement } = useGamification();
   
   const [amount, setAmount] = useState('');
   const [category, setCategory] = useState('');
@@ -110,6 +112,12 @@ export default function AddTransactionScreen() {
             setCategory(data.category || '');
             setDescription(data.description || '');
             if (data.date) setDate(new Date(data.date));
+            
+            // Show Gamification Rewards
+            if (data.xp) showXP(data.xp);
+            if (data.unlockedAchievements && data.unlockedAchievements.length > 0) {
+                data.unlockedAchievements.forEach((ach: any) => showAchievement(ach));
+            }
             
             Toast.show({
                 type: 'success',
@@ -229,7 +237,17 @@ export default function AddTransactionScreen() {
             throw new Error('Failed to create transaction');
         }
 
-        router.replace('/(tabs)/home');
+        const data = await response.json();
+
+        // Show Gamification Rewards
+        if (data.xp) showXP(data.xp);
+        if (data.unlockedAchievements && data.unlockedAchievements.length > 0) {
+            data.unlockedAchievements.forEach((ach: any) => showAchievement(ach));
+        }
+
+        setTimeout(() => {
+            router.replace('/(tabs)/home');
+        }, 1500);
 
     } catch (err) {
         console.error(err);
