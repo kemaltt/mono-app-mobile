@@ -109,7 +109,8 @@ profile.post('/update', zValidator('json', updateProfileSchema, (result, c) => {
     data
   })
 
-  return c.json({ message: 'Profile updated', user: { id: user.id, email: user.email, firstName: user.firstName, lastName: user.lastName } })
+  const { password: _, verificationCode: __, deleteCode: ___, ...safeUser } = user
+  return c.json({ message: 'Profile updated', user: safeUser })
 })
 
 // AVATAR UPLOAD
