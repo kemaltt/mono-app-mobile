@@ -210,8 +210,22 @@
     "confirmButton": "Silmeyi Onayla",
     "confirmUndoButton": "Geri Yüklemeyi Onayla",
     "enterCode": "Doğrulama Kodunu Gir",
-    "successDelete": "Hesap 30 gün içinde silinmek üzere zamanlandı.",
     "successUndo": "Silme işlemi iptal edildi!",
     "cancel": "İptal"
+  },
+  "subscriptions": {
+    "title": "Abonelikler",
+    "manage": "Abonelikleri Yönet",
+    "add": "Abonelik Ekle",
+    "name": "İsim (Örn: Netflix)",
+    "amount": "Tutar",
+    "billingCycle": "Ödeme Döngüsü",
+    "startDate": "Başlangıç Tarihi",
+    "nextPayment": "Sonraki Ödeme",
+    "monthly": "Aylık",
+    "yearly": "Yıllık",
+    "weekly": "Haftalık",
+    "empty": "Aktif abonelik bulunmuyor.",
+    "create": "Abonelik Oluştur"
   }
 }

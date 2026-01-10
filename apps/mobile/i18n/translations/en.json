@@ -210,8 +210,22 @@
     "confirmButton": "Confirm Deletion",
     "confirmUndoButton": "Confirm Restoration",
     "enterCode": "Enter Verification Code",
-    "successDelete": "Account scheduled for deletion in 30 days.",
     "successUndo": "Deletion cancelled!",
     "cancel": "Cancel"
+  },
+  "subscriptions": {
+    "title": "Subscriptions",
+    "manage": "Manage Subscriptions",
+    "add": "Add Subscription",
+    "name": "Name (e.g. Netflix)",
+    "amount": "Amount",
+    "billingCycle": "Billing Cycle",
+    "startDate": "Start Date",
+    "nextPayment": "Next Payment",
+    "monthly": "Monthly",
+    "yearly": "Yearly",
+    "weekly": "Weekly",
+    "empty": "No active subscriptions.",
+    "create": "Create Subscription"
   }
 }

@@ -210,8 +210,22 @@
     "confirmButton": "Kündigung bestätigen",
     "confirmUndoButton": "Kündigung widerrufen",
     "enterCode": "Verifizierungscode eingeben",
-    "successDelete": "Konto zur Löschung in 30 Tagen vorgemerkt.",
     "successUndo": "Löschung storniert!",
     "cancel": "Abbrechen"
+  },
+  "subscriptions": {
+    "title": "Abonnements",
+    "manage": "Abonnements verwalten",
+    "add": "Abonnement hinzufügen",
+    "name": "Name (z.B. Netflix)",
+    "amount": "Betrag",
+    "billingCycle": "Abrechnungszyklus",
+    "startDate": "Startdatum",
+    "nextPayment": "Nächste Zahlung",
+    "monthly": "Monatlich",
+    "yearly": "Jährlich",
+    "weekly": "Wöchentlich",
+    "empty": "Keine aktiven Abonnements.",
+    "create": "Abo erstellen"
   }
 }
