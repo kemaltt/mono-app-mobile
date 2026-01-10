@@ -236,7 +236,7 @@ app.get("/", async (c) => {
   try {
     const transactions = await prisma.transaction.findMany({
       where: { user: { id: user.id } },
-      orderBy: { date: "desc" },
+      orderBy: [{ date: "desc" }, { createdAt: "desc" }],
       take: limit,
     });
 
