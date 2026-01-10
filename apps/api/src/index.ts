@@ -8,6 +8,7 @@ import transactions from "./routes/transactions";
 import profile from "./routes/profile";
 import budgets from "./routes/budgets";
 import subscriptions from "./routes/subscriptions";
+import debts from "./routes/debts";
 
 const app = new Hono();
 
@@ -25,6 +26,7 @@ app.route("/transactions", transactions);
 app.route("/profile", profile);
 app.route("/budgets", budgets);
 app.route("/subscriptions", subscriptions);
+app.route("/debts", debts);
 
 const port = 4040;
 console.log(`Server is running on port ${port}`);

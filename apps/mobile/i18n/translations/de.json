@@ -227,5 +227,19 @@
     "weekly": "Wöchentlich",
     "empty": "Keine aktiven Abonnements.",
     "create": "Abo erstellen"
+  },
+  "debts": {
+    "title": "Schulden & Kredite",
+    "add": "Eintrag hinzufügen",
+    "borrowed": "Geliehen",
+    "lent": "Verliehen",
+    "person": "Name der Person",
+    "amount": "Betrag",
+    "dueDate": "Fälligkeitsdatum",
+    "note": "Notiz",
+    "resolved": "Bezahlt",
+    "active": "Aktiv",
+    "empty": "Keine Schulden oder Kredite gefunden.",
+    "create": "Eintrag erstellen"
   }
 }

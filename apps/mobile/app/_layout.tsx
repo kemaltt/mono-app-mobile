@@ -89,6 +89,8 @@ function RootLayoutContent() {
             <Stack.Screen name="modal" options={{ presentation: 'modal', headerShown: false }} />
             <Stack.Screen name="(auth)" options={{ headerShown: false }} />
             <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            <Stack.Screen name="subscriptions" options={{ headerShown: false }} />
+            <Stack.Screen name="debts" options={{ headerShown: false }} />
             {/* <Stack.Screen name="profile" options={{ headerShown: false }} /> */}
             <Stack.Screen name="transaction/[id]" options={{ headerShown: false }} />
           </Stack>

@@ -151,6 +151,35 @@ export default function WalletScreen() {
              </TouchableOpacity>
           </View>
 
+          {/* Debts & Credits Section */}
+          <View style={{ paddingHorizontal: 25, marginBottom: 20 }}>
+             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                <Text style={{ fontSize: 20, fontWeight: '700', color: colors.text }}>{t('debts.title')}</Text>
+             </View>
+             <TouchableOpacity 
+                style={{ 
+                    flexDirection: 'row', 
+                    alignItems: 'center', 
+                    justifyContent: 'space-between',
+                    padding: 16, 
+                    backgroundColor: colorScheme === 'dark' ? '#1E293B' : '#F0FDF4', 
+                    borderRadius: 16 
+                }}
+                onPress={() => router.push('/debts')}
+             >
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    <View style={{ width: 40, height: 40, borderRadius: 10, backgroundColor: '#10B981', alignItems: 'center', justifyContent: 'center', marginRight: 12 }}>
+                        <Ionicons name="people" size={20} color="white" />
+                    </View>
+                    <View>
+                        <Text style={{ fontSize: 16, fontWeight: '600', color: colors.text }}>{t('debts.title')}</Text>
+                        <Text style={{ fontSize: 12, color: colors.subtext }}>{t('debts.empty')}</Text>
+                    </View>
+                </View>
+                <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
+             </TouchableOpacity>
+          </View>
+
           {/* Budget List Header */}
           <View style={styles.listHeader}>
              <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('wallet.history')}</Text>

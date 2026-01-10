@@ -23,6 +23,7 @@ model User {
   transactions Transaction[]
   budgets   Budget[]
   subscriptions Subscription[]
+  debts     Debt[]
 
   // Account Deletion Logic
   status          UserStatus @default(ACTIVE)
@@ -107,3 +108,24 @@ model Subscription {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
+model Debt {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  personName  String
+  amount      Decimal
+  type        DebtType // BORROWED (Borç) or LENT (Alacak)
+  dueDate     DateTime?
+  note        String?
+  isResolved  Boolean  @default(false)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+enum DebtType {
+  BORROWED
+  LENT
+}
+

@@ -227,5 +227,19 @@
     "weekly": "Haftalık",
     "empty": "Aktif abonelik bulunmuyor.",
     "create": "Abonelik Oluştur"
+  },
+  "debts": {
+    "title": "Borçlar & Alacaklar",
+    "add": "Kayıt Ekle",
+    "borrowed": "Borç Alındı",
+    "lent": "Borç Verildi",
+    "person": "Kişi Adı",
+    "amount": "Tutar",
+    "dueDate": "Ödeme Tarihi",
+    "note": "Not",
+    "resolved": "Ödendi",
+    "active": "Aktif",
+    "empty": "Borç veya alacak bulunamadı.",
+    "create": "Kayıt Oluştur"
   }
 }

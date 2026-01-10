@@ -1,8 +1,7 @@
 import { Hono } from "hono";
-import { PrismaClient } from "@prisma/client";
+import prisma from "../lib/prisma";
 
 const app = new Hono<{ Variables: { user: any } }>();
-const prisma = new PrismaClient();
 
 // Helper to calculate next payment date
 const calculateNextDate = (current: Date, cycle: string) => {

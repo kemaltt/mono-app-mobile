@@ -227,5 +227,19 @@
     "weekly": "Weekly",
     "empty": "No active subscriptions.",
     "create": "Create Subscription"
+  },
+  "debts": {
+    "title": "Debts & Credits",
+    "add": "Add Entry",
+    "borrowed": "Borrowed",
+    "lent": "Lent",
+    "person": "Person Name",
+    "amount": "Amount",
+    "dueDate": "Due Date",
+    "note": "Note",
+    "resolved": "Resolved",
+    "active": "Active",
+    "empty": "No debts or credits found.",
+    "create": "Create Entry"
   }
 }
