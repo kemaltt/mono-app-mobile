@@ -15,7 +15,6 @@ export default function SubscriptionsScreen() {
     const router = useRouter();
     const { colorScheme } = useTheme();
     const colors = Colors[colorScheme];
-    const subtextColor = '#9CA3AF';
     const { token } = useAuth();
     
     const [subscriptions, setSubscriptions] = useState([]);
@@ -100,7 +99,7 @@ export default function SubscriptionsScreen() {
                     {subscriptions.length === 0 ? (
                         <View style={styles.emptyContainer}>
                             <MaterialCommunityIcons name="calendar-refresh" size={64} color="#D1D5DB" />
-                            <Text style={[styles.emptyText, { color: subtextColor }]}>{t('subscriptions.empty')}</Text>
+                            <Text style={[styles.emptyText, { color: colors.subtext }]}>{t('subscriptions.empty')}</Text>
                         </View>
                     ) : (
                         subscriptions.map((sub: any) => (
@@ -111,7 +110,7 @@ export default function SubscriptionsScreen() {
                                     </View>
                                     <View style={styles.cardInfo}>
                                         <Text style={[styles.name, { color: colors.text }]}>{sub.name}</Text>
-                                        <Text style={[styles.cycle, { color: subtextColor }]}>{sub.billingCycle} • {new Date(sub.nextPaymentDate).toLocaleDateString()}</Text>
+                                        <Text style={[styles.cycle, { color: colors.subtext }]}>{sub.billingCycle} • {new Date(sub.nextPaymentDate).toLocaleDateString()}</Text>
                                     </View>
                                     <Text style={[styles.amount, { color: colors.text }]}>
                                         {sub.currency === 'USD' ? '$' : '€'}{sub.amount}

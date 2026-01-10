@@ -15,7 +15,6 @@ export default function DebtsScreen() {
     const router = useRouter();
     const { colorScheme } = useTheme();
     const colors = Colors[colorScheme];
-    const subtextColor = '#9CA3AF';
     const { token } = useAuth();
     
     const [debts, setDebts] = useState([]);
@@ -118,7 +117,7 @@ export default function DebtsScreen() {
                     {debts.length === 0 ? (
                         <View style={styles.emptyContainer}>
                             <MaterialCommunityIcons name="handshake-outline" size={64} color="#D1D5DB" />
-                            <Text style={[styles.emptyText, { color: subtextColor }]}>{t('debts.empty')}</Text>
+                            <Text style={[styles.emptyText, { color: colors.subtext }]}>{t('debts.empty')}</Text>
                         </View>
                     ) : (
                         debts.map((debt: any) => (
@@ -133,7 +132,7 @@ export default function DebtsScreen() {
                                     </View>
                                     <View style={styles.cardInfo}>
                                         <Text style={[styles.name, { color: colors.text }]}>{debt.personName}</Text>
-                                        <Text style={[styles.typeText, { color: subtextColor }]}>
+                                        <Text style={[styles.typeText, { color: colors.subtext }]}>
                                             {t(`debts.${debt.type.toLowerCase()}`)} 
                                             {debt.dueDate ? ` • ${new Date(debt.dueDate).toLocaleDateString()}` : ''}
                                         </Text>
