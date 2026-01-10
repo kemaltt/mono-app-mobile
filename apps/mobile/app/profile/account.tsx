@@ -25,6 +25,7 @@ export default function AccountScreen() {
        label: isPendingDeletion ? 'Cancel Deletion' : t('profile.deleteAccount'), 
        onPress: () => router.push('/profile/delete-account') 
     },
+    { icon: 'time-outline', label: t('profile.timezone'), value: user?.timezone, onPress: () => {} },
     { icon: 'star-outline', label: t('profile.plusMembership'), onPress: () => {} },
   ];
 
@@ -58,7 +59,12 @@ export default function AccountScreen() {
                 <Ionicons name={item.icon} size={22} color={colorScheme === 'dark' ? '#9CA3AF' : '#4B5563'} />
                 <Text style={[styles.itemLabel, { color: colors.text }]}>{item.label}</Text>
               </View>
-              <Ionicons name="chevron-forward" size={20} color="#D1D5DB" />
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                {item.value && (
+                    <Text style={{ color: '#9CA3AF', marginRight: 8, fontSize: 14 }}>{item.value}</Text>
+                )}
+                <Ionicons name="chevron-forward" size={20} color="#D1D5DB" />
+              </View>
             </TouchableOpacity>
           ))}
         </View>

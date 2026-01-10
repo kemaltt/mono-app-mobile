@@ -26,6 +26,7 @@ model User {
   status          UserStatus @default(ACTIVE)
   deleteRequestDate DateTime?
   deleteCode      String?    // OTP for deletion confirmation or undo
+  timezone          String   @default("UTC")
 }
 
 enum UserStatus {

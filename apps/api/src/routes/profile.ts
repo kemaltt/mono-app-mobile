@@ -81,18 +81,20 @@ profile.post('/change-password', zValidator('json', changePasswordSchema, (resul
 const updateProfileSchema = z.object({
   email: z.string().email().optional(),
   firstName: z.string().optional(),
-  lastName: z.string().optional()
+  lastName: z.string().optional(),
+  timezone: z.string().optional()
 })
 
 profile.post('/update', zValidator('json', updateProfileSchema, (result, c) => {
   if (!result.success) return c.json({ error: result.error.issues[0].message }, 400)
 }), async (c) => {
   const payload = c.get('jwtPayload')
-  const { email, firstName, lastName } = c.req.valid('json')
+  const { email, firstName, lastName, timezone } = c.req.valid('json')
 
   const data: any = {}
   if (firstName) data.firstName = firstName
   if (lastName) data.lastName = lastName
+  if (timezone) data.timezone = timezone
 
   if (email) {
     const existing = await prisma.user.findUnique({ where: { email } })

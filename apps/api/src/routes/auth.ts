@@ -14,13 +14,15 @@ const registerSchema = z.object({
   email: z.string().email(),
   password: z.string().min(6),
   firstName: z.string().min(1),
-  lastName: z.string().min(1)
+  lastName: z.string().min(1),
+  timezone: z.string().optional()
 })
 
 // Login Schema
 const loginSchema = z.object({
   email: z.string().email(),
-  password: z.string()
+  password: z.string(),
+  timezone: z.string().optional()
 })
 
 // Verify Schema
@@ -43,7 +45,7 @@ auth.post('/register', zValidator('json', registerSchema, (result, c) => {
     return c.json({ error: result.error.issues[0].message }, 400)
   }
 }), async (c) => {
-  const { email, password, firstName, lastName } = c.req.valid('json')
+  const { email, password, firstName, lastName, timezone } = c.req.valid('json')
 
   try {
     const existingUser = await prisma.user.findUnique({ where: { email } })
@@ -62,6 +64,7 @@ auth.post('/register', zValidator('json', registerSchema, (result, c) => {
         lastName,
         verificationCode,
         isVerified: false,
+        timezone: timezone || 'UTC',
         wallets: {
             create: {
                 name: 'Main Wallet',
@@ -127,7 +130,7 @@ auth.post('/verify', zValidator('json', verifySchema, (result, c) => {
     return c.json({ 
         message: 'Email verified successfully',
         token,
-        user: { id: user.id, email: user.email, firstName: user.firstName, lastName: user.lastName, avatarUrl: user.avatarUrl }
+        user: { id: user.id, email: user.email, firstName: user.firstName, lastName: user.lastName, avatarUrl: user.avatarUrl, timezone: user.timezone }
     })
 
   } catch (error) {
@@ -178,10 +181,10 @@ auth.post('/login', zValidator('json', loginSchema, (result, c) => {
     return c.json({ error: result.error.issues[0].message }, 400)
   }
 }), async (c) => {
-  const { email, password } = c.req.valid('json')
+  const { email, password, timezone } = c.req.valid('json')
 
   try {
-    const user = await prisma.user.findUnique({ where: { email } })
+    let user = await prisma.user.findUnique({ where: { email } })
     if (!user) {
       return c.json({ error: 'Invalid credentials' }, 401)
     }
@@ -219,6 +222,14 @@ auth.post('/login', zValidator('json', loginSchema, (result, c) => {
       return c.json({ error: 'Invalid credentials' }, 401)
     }
 
+    // Update Timezone if changed
+    if (timezone && user.timezone !== timezone) {
+        user = await prisma.user.update({
+            where: { id: user.id },
+            data: { timezone }
+        })
+    }
+
     const token = await sign({ id: user.id, email: user.email }, JWT_SECRET)
 
     return c.json({ 
@@ -229,7 +240,8 @@ auth.post('/login', zValidator('json', loginSchema, (result, c) => {
             firstName: user.firstName, 
             lastName: user.lastName, 
             avatarUrl: user.avatarUrl,
-            status: user.status 
+            status: user.status,
+            timezone: user.timezone 
         } 
     })
   } catch (error) {

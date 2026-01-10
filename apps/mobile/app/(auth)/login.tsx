@@ -6,6 +6,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useAuth } from '../../context/auth';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
+import * as Localization from 'expo-localization';
 
 const { width, height } = Dimensions.get('window');
 import { API_URL } from '../../constants/Config';
@@ -42,10 +43,11 @@ export default function LoginScreen() {
     setLoading(true);
     
     try {
+      const timezone = Localization.getCalendars()[0]?.timeZone || 'UTC';
       const response = await fetch(`${API_URL}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email, password, timezone }),
       });
 
       const data = await response.json();

@@ -16,6 +16,9 @@ module.exports = function (api) {
               if (path.matchesPattern('process.env.EXPO_ROUTER_CONTEXT_MODULE')) {
                 path.replaceWith({ type: 'StringLiteral', value: '../../app' });
               }
+              if (path.matchesPattern('process.env.EXPO_ROUTER_IMPORT_MODE')) {
+                path.replaceWith({ type: 'StringLiteral', value: 'sync' });
+              }
             }
           }
         };

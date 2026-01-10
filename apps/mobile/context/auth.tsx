@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter, useSegments, useRootNavigationState } from 'expo-router';
+import * as Localization from 'expo-localization';
 
 // Define context shape
 interface AuthContextType {
@@ -117,6 +118,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await AsyncStorage.setItem('user', JSON.stringify(newUser));
   };
 
+
+
   const refreshUser = async () => {
     if (!token) return;
     try {
@@ -125,7 +128,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (response.ok) {
-        const userData = await response.json();
+        let userData = await response.json();
+        
+        // Check timezone mismatch
+        const deviceTimezone = Localization.getCalendars()[0]?.timeZone || 'UTC';
+        if (userData.timezone && userData.timezone !== deviceTimezone) {
+            try {
+                const updateRes = await fetch(`${API_URL}/profile/update`, {
+                    method: 'POST',
+                    headers: { 
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json' 
+                    },
+                    body: JSON.stringify({ timezone: deviceTimezone })
+                });
+                
+                if (updateRes.ok) {
+                    const updateData = await updateRes.json();
+                    if (updateData.user) {
+                        userData = updateData.user;
+                    }
+                }
+            } catch (err) {
+                console.log('Failed to auto-update timezone', err);
+            }
+        }
+
         await updateUser(userData);
       }
     } catch (e) {
