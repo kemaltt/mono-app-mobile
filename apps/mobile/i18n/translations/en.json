@@ -241,5 +241,17 @@
     "active": "Active",
     "empty": "No debts or credits found.",
     "create": "Create Entry"
+  },
+  "achievements": {
+    "title": "Achievements",
+    "unlockedAt": "Unlocked at",
+    "locked": "Locked",
+    "xp": "XP",
+    "badge_first_tx": "First Step",
+    "desc_first_tx": "Created your first transaction",
+    "badge_tx_master": "Transaction Master",
+    "desc_tx_master": "Created 10 transactions",
+    "badge_budget_planner": "Budget Hero",
+    "desc_budget_planner": "Created 3 different budgets"
   }
 }

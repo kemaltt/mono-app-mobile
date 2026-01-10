@@ -3,6 +3,7 @@ import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
 import { verify } from "hono/jwt";
 import prisma from "../lib/prisma";
+import { addXP } from "../lib/gamification";
 
 const JWT_SECRET = process.env.JWT_SECRET || "supersecretkeyshouldbehidden";
 
@@ -99,6 +100,10 @@ app.post("/", zValidator("json", createBudgetSchema), async (c) => {
         period: "MONTHLY",
       },
     });
+
+    // Award XP for creating a budget
+    await addXP(user.id, 15);
+
     return c.json(budget, 201);
   } catch (e) {
     console.error(e);

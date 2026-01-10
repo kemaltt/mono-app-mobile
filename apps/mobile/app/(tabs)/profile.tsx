@@ -1,9 +1,9 @@
 // @ts-nocheck
 import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView, Dimensions, ActivityIndicator } from 'react-native';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../context/auth';
-import { useRouter, Stack } from 'expo-router';
+import { useRouter, Stack, useFocusEffect } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../context/theme';
 import { Colors } from '../../constants/theme';
@@ -14,13 +14,19 @@ import Toast from 'react-native-toast-message';
 const { width } = Dimensions.get('window');
 
 export default function ProfileScreen() {
-  const { user, signOut, token, updateUser } = useAuth();
+  const { user, signOut, token, updateUser, refreshUser } = useAuth();
   const { colorScheme } = useTheme();
   const colors = Colors[colorScheme];
   const router = useRouter();
   const { t } = useTranslation();
   const [uploading, setUploading] = useState(false);
   const [loading, setLoading] = useState(true);
+
+  useFocusEffect(
+    useCallback(() => {
+        refreshUser();
+    }, [])
+  );
 
   useEffect(() => {
     // Simulate initial loading to show ActivityIndicator and hide bundling artifact
@@ -121,7 +127,7 @@ export default function ProfileScreen() {
       title: t('wallet.achievements'), 
       subtitle: t('wallet.badges'), 
       icon: 'trophy-outline', 
-      onPress: () => {} 
+      onPress: () => router.push('/profile/achievements') 
     },
   ];
 
@@ -163,11 +169,11 @@ export default function ProfileScreen() {
           {/* User Level / XP Bar */}
           <View style={[styles.levelContainer, { backgroundColor: colorScheme === 'dark' ? '#1E293B' : '#F3F4F6' }]}>
             <View style={styles.levelHeader}>
-                <Text style={[styles.levelLabel, { color: colors.text }]}>{t('wallet.level')} 5</Text>
-                <Text style={styles.xpLabel}>1,240 / 2,000 {t('wallet.xp')}</Text>
+                <Text style={[styles.levelLabel, { color: colors.text }]}>{t('wallet.level')} {user?.level || 1}</Text>
+                <Text style={styles.xpLabel}>{user?.xp || 0} / {(user?.level || 1) * 100} {t('wallet.xp')}</Text>
             </View>
             <View style={[styles.xpBarBackground, { backgroundColor: colorScheme === 'dark' ? '#334155' : '#E5E7EB' }]}>
-                <View style={[styles.xpBarFill, { width: '62%' }]} />
+                <View style={[styles.xpBarFill, { width: `${Math.min(((user?.xp || 0) % 100), 99)}%` }]} />
             </View>
           </View>
         </View>

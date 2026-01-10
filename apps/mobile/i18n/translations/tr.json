@@ -241,5 +241,17 @@
     "active": "Aktif",
     "empty": "Borç veya alacak bulunamadı.",
     "create": "Kayıt Oluştur"
+  },
+  "achievements": {
+    "title": "Başarımlar",
+    "unlockedAt": "Kazanıldı",
+    "locked": "Kilitli",
+    "xp": "XP",
+    "badge_first_tx": "İlk Adım",
+    "desc_first_tx": "İlk işlemini başarıyla kaydettin",
+    "badge_tx_master": "İşlem Ustası",
+    "desc_tx_master": "Toplam 10 işlem gerçekleştirdin",
+    "badge_budget_planner": "Bütçe Kahramanı",
+    "desc_budget_planner": "3 farklı bütçe oluşturdun"
   }
 }

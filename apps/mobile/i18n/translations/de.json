@@ -241,5 +241,17 @@
     "active": "Aktiv",
     "empty": "Keine Schulden oder Kredite gefunden.",
     "create": "Eintrag erstellen"
+  },
+  "achievements": {
+    "title": "Erfolge",
+    "unlockedAt": "Freigeschaltet am",
+    "locked": "Gesperrt",
+    "xp": "XP",
+    "badge_first_tx": "Erster Schritt",
+    "desc_first_tx": "Ihre erste Transaktion wurde erstellt",
+    "badge_tx_master": "Transaktionsmaster",
+    "desc_tx_master": "10 Transaktionen erstellt",
+    "badge_budget_planner": "Budget-Held",
+    "desc_budget_planner": "3 verschiedene Budgets erstellt"
   }
 }

@@ -4,6 +4,7 @@ import { z } from "zod";
 import { verify } from "hono/jwt";
 import prisma from "../lib/prisma";
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { addXP } from "../lib/gamification";
 
 const JWT_SECRET = process.env.JWT_SECRET || "supersecretkeyshouldbehidden";
 
@@ -107,6 +108,7 @@ app.post("/upload", async (c) => {
 
 // SCAN RECEIPT WITH AI (GEMINI)
 app.post("/scan", async (c) => {
+  const user = c.get("user");
   const body = await c.req.parseBody();
   const file = body["file"] as File;
   const lang = c.req.query("lang") || "en";
@@ -172,6 +174,9 @@ app.post("/scan", async (c) => {
     const jsonMatch = text.match(/\{[\s\S]*\}/);
     const jsonStr = jsonMatch ? jsonMatch[0] : text;
     const data = JSON.parse(jsonStr);
+
+    // Award XP for scanning
+    await addXP(user.id, 25);
 
     return c.json(data);
   } catch (error) {
@@ -374,6 +379,9 @@ app.post("/", zValidator("json", createTransactionSchema), async (c) => {
 
       return t;
     });
+
+    // Award XP for creating transaction
+    await addXP(user.id, 10);
 
     return c.json(result, 201);
   } catch (error) {

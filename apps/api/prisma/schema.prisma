@@ -24,12 +24,16 @@ model User {
   budgets   Budget[]
   subscriptions Subscription[]
   debts     Debt[]
+  achievements UserAchievement[]
+
+  xp        Int      @default(0)
+  level     Int      @default(1)
+  timezone  String   @default("UTC")
 
   // Account Deletion Logic
   status          UserStatus @default(ACTIVE)
   deleteRequestDate DateTime?
   deleteCode      String?    // OTP for deletion confirmation or undo
-  timezone          String   @default("UTC")
 }
 
 enum UserStatus {
@@ -127,5 +131,27 @@ model Debt {
 enum DebtType {
   BORROWED
   LENT
+}
+
+model Achievement {
+  id          String   @id @default(uuid())
+  key         String   @unique
+  name        String
+  description String
+  icon        String
+  xpReward    Int      @default(50)
+  
+  users       UserAchievement[]
+}
+
+model UserAchievement {
+  id            String   @id @default(uuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id])
+  achievementId String
+  achievement   Achievement @relation(fields: [achievementId], references: [id])
+  unlockedAt    DateTime @default(now())
+
+  @@unique([userId, achievementId])
 }
 
