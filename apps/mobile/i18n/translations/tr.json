@@ -191,6 +191,8 @@
     "scanning": "Fiş taranıyor...",
     "scanSuccess": "Fiş başarıyla tarandı!",
     "chooseMethod": "Belgeyi nasıl eklemek istersiniz?",
+    "chooseMethodAi": "Yapay zeka destekli bir tarama yöntemi seçin",
+    "aiPowered": "AI Destekli",
     "useCamera": "Fotoğraf Çek ve Tara",
     "useGallery": "Galeriden Seç ve Tara",
     "usePDF": "PDF Yükle ve Tara",

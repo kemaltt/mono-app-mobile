@@ -191,6 +191,8 @@
     "scanning": "Beleg wird gescannt...",
     "scanSuccess": "Beleg erfolgreich gescannt!",
     "chooseMethod": "Wie möchten Sie das Dokument hinzufügen?",
+    "chooseMethodAi": "Wählen Sie eine KI-gestützte Scannmethode",
+    "aiPowered": "KI-Powered",
     "useCamera": "Foto aufnehmen & scannen",
     "useGallery": "Aus Galerie wählen & scannen",
     "usePDF": "PDF hochladen & scannen",

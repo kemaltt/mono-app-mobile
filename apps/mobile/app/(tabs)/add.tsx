@@ -1,10 +1,25 @@
 // @ts-nocheck
-import { View, Text, TextInput, TouchableOpacity, Platform, Alert, KeyboardAvoidingView, ScrollView, StyleSheet, Dimensions, ActivityIndicator } from 'react-native';
+import { 
+    StyleSheet, 
+    Text, 
+    View, 
+    ScrollView, 
+    TouchableOpacity, 
+    TextInput, 
+    KeyboardAvoidingView, 
+    Platform, 
+    Alert,
+    Image,
+    Modal,
+    Pressable,
+    Dimensions, 
+    ActivityIndicator 
+} from 'react-native';
 import { useState } from 'react';
 import { useRouter } from 'expo-router';
 import { useAuth } from '../../context/auth';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../context/theme';
 import { Colors } from '../../constants/theme';
@@ -31,9 +46,10 @@ export default function AddTransactionScreen() {
   const [type, setType] = useState<'INCOME' | 'EXPENSE'>('EXPENSE');
   const [loading, setLoading] = useState(false);
   const [focusedField, setFocusedField] = useState<string | null>(null);
-  const [attachment, setAttachment] = useState<{ uri: string, name: string, type: string } | null>(null);
+  const [attachment, setAttachment] = useState<any>(null);
   const [uploadingAttachment, setUploadingAttachment] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
+  const [isScanModalVisible, setIsScanModalVisible] = useState(false);
 
   const handlePickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -55,52 +71,7 @@ export default function AddTransactionScreen() {
   };
 
   const handleScanReceipt = async () => {
-    Alert.alert(
-      t('add.scanReceipt'),
-      t('add.chooseMethod'),
-      [
-        {
-          text: t('add.useCamera'),
-          onPress: async () => {
-            const { status } = await ImagePicker.requestCameraPermissionsAsync();
-            if (status !== 'granted') {
-                Alert.alert(t('common.error'), 'Camera permission is required');
-                return;
-            }
-            const result = await ImagePicker.launchCameraAsync({
-              mediaTypes: ['images'],
-              allowsEditing: true,
-              quality: 0.8,
-            });
-            if (!result.canceled) processScannedAsset(result.assets[0]);
-          }
-        },
-        {
-          text: t('add.useGallery'),
-          onPress: async () => {
-            const result = await ImagePicker.launchImageLibraryAsync({
-              mediaTypes: ['images'],
-              allowsEditing: true,
-              quality: 0.8,
-            });
-            if (!result.canceled) processScannedAsset(result.assets[0]);
-          }
-        },
-        {
-          text: t('add.usePDF'),
-          onPress: async () => {
-            const result = await DocumentPicker.getDocumentAsync({
-              type: 'application/pdf',
-            });
-            if (!result.canceled) processScannedAsset(result.assets[0]);
-          }
-        },
-        {
-          text: t('common.cancel'),
-          style: 'cancel'
-        }
-      ]
-    );
+    setIsScanModalVisible(true);
   };
 
   const processScannedAsset = async (asset: any) => {
@@ -112,6 +83,7 @@ export default function AddTransactionScreen() {
       type: isPdf ? 'application/pdf' : 'image/jpeg'
     });
 
+    setIsScanModalVisible(false);
     setIsScanning(true);
     
     try {
@@ -284,7 +256,11 @@ export default function AddTransactionScreen() {
           {isScanning ? (
               <ActivityIndicator color="white" size="small" />
           ) : (
-              <Ionicons name="scan-outline" size={24} color="white" />
+              <View style={styles.customScanIcon}>
+                  <Ionicons name="scan-outline" size={26} color="white" />
+                  <View style={styles.scanLine} />
+                  <View style={styles.scanCenterFill} />
+              </View>
           )}
         </TouchableOpacity>
       </View>
@@ -503,6 +479,102 @@ export default function AddTransactionScreen() {
           </ScrollView>
         </KeyboardAvoidingView>
       </View>
+      <Modal
+        visible={isScanModalVisible}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setIsScanModalVisible(false)}
+      >
+        <Pressable 
+            style={styles.modalOverlay} 
+            onPress={() => setIsScanModalVisible(false)}
+        >
+            <View style={[styles.modalContent, { backgroundColor: colorScheme === 'dark' ? '#1E293B' : 'white' }]}>
+                <View style={styles.modalHeader}>
+                    <View style={[styles.modalIconBg, { backgroundColor: colorScheme === 'dark' ? '#0F172A' : '#F0F7FF' }]}>
+                        <MaterialCommunityIcons name="auto-fix" size={28} color="#007AFF" />
+                    </View>
+                    <Text style={[styles.modalTitle, { color: colorScheme === 'dark' ? '#F3F4F6' : '#111827' }]}>{t('add.scanReceipt')}</Text>
+                    <Text style={[styles.modalSubtitle, { color: colorScheme === 'dark' ? '#9CA3AF' : '#6B7280' }]}>{t('add.chooseMethodAi')}</Text>
+                    <View style={[styles.aiTag, { backgroundColor: colorScheme === 'dark' ? 'rgba(56, 189, 248, 0.1)' : '#F0F9FF' }]}>
+                        <Ionicons name="sparkles" size={14} color="#007AFF" />
+                        <Text style={styles.aiTagText}>{t('add.aiPowered')}</Text>
+                    </View>
+                </View>
+
+                <View style={styles.modalOptions}>
+                    <TouchableOpacity 
+                        style={[
+                            styles.modalOption, 
+                            { 
+                                backgroundColor: colorScheme === 'dark' ? '#0F172A' : '#F9FAFB', 
+                                borderColor: colorScheme === 'dark' ? '#334155' : '#F3F4F6' 
+                            }
+                        ]}
+                        onPress={async () => {
+                            const { status } = await ImagePicker.requestCameraPermissionsAsync();
+                            if (status !== 'granted') return Alert.alert('Error', 'Permission required');
+                            const result = await ImagePicker.launchCameraAsync({ mediaTypes: ['images'], allowsEditing: true, quality: 0.8 });
+                            if (!result.canceled) processScannedAsset(result.assets[0]);
+                        }}
+                    >
+                        <View style={[styles.optionIcon, { backgroundColor: colorScheme === 'dark' ? '#1E293B' : '#E0F2FE' }]}>
+                            <Ionicons name="camera" size={24} color="#0EA5E9" />
+                        </View>
+                        <Text style={[styles.optionText, { color: colorScheme === 'dark' ? '#E5E7EB' : '#1F2937' }]}>{t('add.useCamera')}</Text>
+                        <Ionicons name="chevron-forward" size={18} color={colorScheme === 'dark' ? '#6B7280' : '#9CA3AF'} />
+                    </TouchableOpacity>
+
+                    <TouchableOpacity 
+                        style={[
+                            styles.modalOption, 
+                            { 
+                                backgroundColor: colorScheme === 'dark' ? '#0F172A' : '#F9FAFB', 
+                                borderColor: colorScheme === 'dark' ? '#334155' : '#F3F4F6' 
+                            }
+                        ]}
+                        onPress={async () => {
+                            const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], allowsEditing: true, quality: 0.8 });
+                            if (!result.canceled) processScannedAsset(result.assets[0]);
+                        }}
+                    >
+                        <View style={[styles.optionIcon, { backgroundColor: colorScheme === 'dark' ? '#1E293B' : '#F0F9FF' }]}>
+                            <Ionicons name="image" size={24} color="#0EA5E9" />
+                        </View>
+                        <Text style={[styles.optionText, { color: colorScheme === 'dark' ? '#E5E7EB' : '#1F2937' }]}>{t('add.useGallery')}</Text>
+                        <Ionicons name="chevron-forward" size={18} color={colorScheme === 'dark' ? '#6B7280' : '#9CA3AF'} />
+                    </TouchableOpacity>
+
+                    <TouchableOpacity 
+                        style={[
+                            styles.modalOption, 
+                            { 
+                                backgroundColor: colorScheme === 'dark' ? '#0F172A' : '#F9FAFB', 
+                                borderColor: colorScheme === 'dark' ? '#334155' : '#F3F4F6' 
+                            }
+                        ]}
+                        onPress={async () => {
+                            const result = await DocumentPicker.getDocumentAsync({ type: 'application/pdf' });
+                            if (!result.canceled) processScannedAsset(result.assets[0]);
+                        }}
+                    >
+                        <View style={[styles.optionIcon, { backgroundColor: colorScheme === 'dark' ? '#1E293B' : '#EEF2FF' }]}>
+                            <Ionicons name="document-text" size={24} color="#6366F1" />
+                        </View>
+                        <Text style={[styles.optionText, { color: colorScheme === 'dark' ? '#E5E7EB' : '#1F2937' }]}>{t('add.usePDF')}</Text>
+                        <Ionicons name="chevron-forward" size={18} color={colorScheme === 'dark' ? '#6B7280' : '#9CA3AF'} />
+                    </TouchableOpacity>
+                </View>
+
+                <TouchableOpacity 
+                    style={styles.modalCancel}
+                    onPress={() => setIsScanModalVisible(false)}
+                >
+                    <Text style={styles.modalCancelText}>{t('common.cancel')}</Text>
+                </TouchableOpacity>
+            </View>
+        </Pressable>
+      </Modal>
     </View>
   );
 }
@@ -607,8 +679,142 @@ const styles = StyleSheet.create({
   amountPrefix: {
     fontSize: 16,
     fontWeight: '700',
-    marginRight: 10,
+    color: '#111827',
   },
+  scanIconWrapper: {
+    position: 'relative',
+    width: 32,
+    height: 32,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  customScanIcon: {
+    width: 26,
+    height: 26,
+    position: 'relative',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  scanLine: {
+    position: 'absolute',
+    width: '80%',
+    height: 1.5,
+    backgroundColor: '#fff',
+    borderRadius: 1,
+    zIndex: 2,
+  },
+  scanCenterFill: {
+    position: 'absolute',
+    width: 14,
+    height: 14,
+    backgroundColor: 'rgba(255,255,255,0.25)',
+    borderRadius: 2,
+    zIndex: 1,
+  },
+  aiBadge: {
+    position: 'absolute',
+    top: -4,
+    right: -6,
+    paddingHorizontal: 4,
+    paddingVertical: 1,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: 'white',
+  },
+  aiBadgeText: {
+    fontSize: 8,
+    fontWeight: '900',
+    color: '#000',
+  },
+  // Modal Styles
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    backgroundColor: 'white',
+    borderTopLeftRadius: 32,
+    borderTopRightRadius: 32,
+    padding: 24,
+    paddingBottom: Platform.OS === 'ios' ? 40 : 24,
+  },
+  modalHeader: {
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  modalIconBg: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: '#F0F7FF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  modalTitle: {
+    fontSize: 22,
+    fontWeight: '800',
+    color: '#111827',
+    marginBottom: 8,
+  },
+  modalSubtitle: {
+    fontSize: 14,
+    color: '#6B7280',
+    textAlign: 'center',
+    marginBottom: 12,
+  },
+  aiTag: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F0F9FF',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    gap: 6,
+  },
+  aiTagText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#007AFF',
+  },
+  modalOptions: {
+    gap: 12,
+    marginBottom: 24,
+  },
+  modalOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    backgroundColor: '#F9FAFB',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#F3F4F6',
+  },
+  optionIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 16,
+  },
+  optionText: {
+    flex: 1,
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1F2937',
+  },
+  modalCancel: {
+    alignItems: 'center',
+    paddingVertical: 12,
+  },
+  modalCancelText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#9CA3AF',
+  },
+
   amountInput: {
     flex: 1,
     fontSize: 16,
