@@ -122,7 +122,7 @@ export default function AddTransactionScreen() {
             type: isPdf ? 'application/pdf' : 'image/jpeg'
         } as any);
 
-        const response = await fetch(`${API_URL}/transactions/scan`, {
+        const response = await fetch(`${API_URL}/transactions/scan?lang=${i18n.language}`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${token}`,

@@ -109,6 +109,7 @@ app.post("/upload", async (c) => {
 app.post("/scan", async (c) => {
   const body = await c.req.parseBody();
   const file = body["file"] as File;
+  const lang = c.req.query("lang") || "en";
 
   if (!file) {
     return c.json({ error: "No file provided" }, 400);
@@ -138,12 +139,12 @@ app.post("/scan", async (c) => {
 
         Instructions:
         1. "amount": Find the FINAL TOTAL amount. Ignore tax breakdowns or sub-totals.
-        2. "category": Choose the most appropriate one from the list based on the merchant or items.
-        3. "description": Use the merchant/store name. If not clear, use a brief summary of items.
+        2. "category": Choose the most appropriate English key from the list above.
+        3. "description": Provide a short summary or merchant name in ${lang} language.
         4. "date": Extract the transaction date. Use current date (${
           new Date().toISOString().split("T")[0]
         }) if not found.
-        5. Language: The receipt might be in Turkish, German, or English. Handle accordingly.
+        5. Tone: Ensure the "description" is professional and localized for ${lang}.
         6. NO markdown, NO code blocks, NO extra text. Just the JSON.`;
 
     // const prompt = `Analyze this receipt and extract the following information in JSON format:
