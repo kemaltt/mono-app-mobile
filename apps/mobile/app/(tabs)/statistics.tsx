@@ -38,6 +38,22 @@ export default function StatisticsScreen() {
   const [showTypeDropdown, setShowTypeDropdown] = useState(false);
   const [selectedTransactionId, setSelectedTransactionId] = useState<string | null>(null);
 
+  const fetchAiSummary = useCallback(async () => {
+    if (!token) return;
+    setLoadingSummary(true);
+    try {
+      const aiRes = await fetch(`${API_URL}/transactions/stats/ai-summary?lang=${i18n.language}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const aiData = await aiRes.json();
+      setAiSummary(aiData.summary || '');
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoadingSummary(false);
+    }
+  }, [token, i18n.language]);
+
   const fetchData = useCallback(async () => {
     try {
       if (!token) return;
@@ -68,15 +84,6 @@ export default function StatisticsScreen() {
         })));
       }
 
-      // Fetch AI Summary
-      setLoadingSummary(true);
-      const aiRes = await fetch(`${API_URL}/transactions/stats/ai-summary?lang=${i18n.language}`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      const aiData = await aiRes.json();
-      setAiSummary(aiData.summary || '');
-      setLoadingSummary(false);
-
       const transRes = await fetch(`${API_URL}/transactions?limit=10`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -85,14 +92,14 @@ export default function StatisticsScreen() {
 
     } catch (error) {
       console.error(error);
-      setLoadingSummary(false);
     }
-  }, [token, selectedType, i18n.language]);
+  }, [token, selectedType]);
 
   useFocusEffect(
     useCallback(() => {
       fetchData();
-    }, [fetchData])
+      fetchAiSummary();
+    }, [fetchData, fetchAiSummary])
   );
 
   return (

@@ -339,7 +339,7 @@ app.get("/stats/categories", async (c) => {
   }
 });
 
-// GET /stats/ai-summary - AI personalized insights
+// GET /stats/ai-summary - AI personalized insights (with Cache)
 app.get("/stats/ai-summary", async (c) => {
   const user = c.get("user");
   const lang = c.req.query("lang") || "en";
@@ -348,9 +348,23 @@ app.get("/stats/ai-summary", async (c) => {
   if (!apiKey) return c.json({ error: "AI not configured" }, 500);
 
   try {
-    const now = new Date();
-    const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    // 1. Check DB Cache
+    const dbUser = await prisma.user.findUnique({
+      where: { id: user.id },
+      select: { aiSummary: true, aiSummaryAt: true, firstName: true },
+    });
 
+    const now = new Date();
+    const cacheThreshold = 24 * 60 * 60 * 1000; // 24 hours
+
+    if (dbUser?.aiSummary && dbUser.aiSummaryAt) {
+      const diff = now.getTime() - new Date(dbUser.aiSummaryAt).getTime();
+      if (diff < cacheThreshold) {
+        return c.json({ summary: dbUser.aiSummary, cached: true });
+      }
+    }
+
+    const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
     const transactions = await prisma.transaction.findMany({
       where: {
         userId: user.id,
@@ -369,9 +383,6 @@ app.get("/stats/ai-summary", async (c) => {
       return c.json({ summary: "No enough data for AI analysis yet." });
     }
 
-    const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
-
     const totalIncome = transactions
       .filter((t) => t.type === "INCOME")
       .reduce((sum, t) => sum + Number(t.amount), 0);
@@ -379,9 +390,8 @@ app.get("/stats/ai-summary", async (c) => {
       .filter((t) => t.type === "EXPENSE")
       .reduce((sum, t) => sum + Number(t.amount), 0);
 
-    const prompt = `Analyze these transactions for ${
-      user.name
-    } and provide a very short, friendly, and actionable financial insight in ${lang}.
+    const userName = dbUser?.firstName || "there";
+    const prompt = `Analyze these transactions for ${userName} and provide a very short, friendly, and actionable financial insight in ${lang}.
     Transactions this month: ${JSON.stringify(transactions)}
     Total Income: ${totalIncome}
     Total Expense: ${totalExpense}
@@ -392,13 +402,43 @@ app.get("/stats/ai-summary", async (c) => {
     - Use ${lang}.
     - NO markdown. Just plain text.`;
 
-    const result = await model.generateContent(prompt);
-    const summary = result.response.text();
+    try {
+      const genAI = new GoogleGenerativeAI(apiKey);
+      const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+      const result = await model.generateContent(prompt);
+      const summary = result.response.text();
 
-    return c.json({ summary });
-  } catch (error) {
-    console.error(error);
-    return c.json({ error: "AI summary failed" }, 500);
+      // Update Cache
+      await prisma.user.update({
+        where: { id: user.id },
+        data: {
+          aiSummary: summary,
+          aiSummaryAt: now,
+        },
+      });
+
+      return c.json({ summary });
+    } catch (aiError: any) {
+      console.warn("Gemini API Error (Quota?):", aiError?.message);
+
+      // Fallback to cache even if old if API fails
+      if (dbUser?.aiSummary) {
+        return c.json({ summary: dbUser.aiSummary, fallback: true });
+      }
+
+      if (aiError?.status === 429) {
+        return c.json({
+          summary:
+            "AI is currently resting. Please try again later for your personalized insights!",
+          isQuotaExceeded: true,
+        });
+      }
+
+      throw aiError;
+    }
+  } catch (error: any) {
+    console.error("AI Summary Route Error:", error.message);
+    return c.json({ error: "AI summary failed", message: error.message }, 500);
   }
 });
 

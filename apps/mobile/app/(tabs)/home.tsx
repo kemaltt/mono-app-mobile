@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { View, Text, ScrollView, TouchableOpacity, Platform, RefreshControl, StyleSheet, ActivityIndicator } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Platform, RefreshControl, StyleSheet, ActivityIndicator, Animated } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { Swipeable } from 'react-native-gesture-handler';
@@ -24,6 +24,19 @@ export default function HomeScreen() {
   const [transactions, setTransactions] = useState<any[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [isBalanceVisible, setIsBalanceVisible] = useState(true);
+  const pulseAnim = useState(new Animated.Value(0.3))[0];
+
+  useEffect(() => {
+    if (loading) {
+        Animated.loop(
+            Animated.sequence([
+                Animated.timing(pulseAnim, { toValue: 1, duration: 1000, useNativeDriver: true }),
+                Animated.timing(pulseAnim, { toValue: 0.3, duration: 1000, useNativeDriver: true })
+            ])
+        ).start();
+    }
+  }, [loading]);
 
   const fetchData = useCallback(async (isRefreshing = false) => {
     try {
@@ -44,6 +57,10 @@ export default function HomeScreen() {
         const transData = await transRes.json();
         setTransactions(transData.transactions || []);
 
+        if (isRefreshing) {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        }
+
     } catch (error) {
         console.error(error);
     } finally {
@@ -59,16 +76,43 @@ export default function HomeScreen() {
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     await fetchData(true);
     setRefreshing(false);
   }, [fetchData]);
 
+  const toggleBalance = () => {
+    Haptics.selectionAsync();
+    setIsBalanceVisible(!isBalanceVisible);
+  };
+
+  const Skeleton = ({ style }: { style: any }) => (
+    <Animated.View style={[style, { opacity: pulseAnim, backgroundColor: colorScheme === 'dark' ? '#334155' : '#E5E7EB', borderRadius: 12 }]} />
+  );
+
   if (loading && !refreshing) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.background }}>
-        {/* <ActivityIndicator size="large" color={colors.primary} /> */}
-        <ActivityIndicator size="small" color="#007AFF" />
-      </View>
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+        <View style={styles.header}>
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <Skeleton style={styles.avatar} />
+                <View>
+                    <Skeleton style={{ width: 80, height: 12, marginBottom: 6 }} />
+                    <Skeleton style={{ width: 120, height: 16 }} />
+                </View>
+            </View>
+        </View>
+        <View style={{ padding: 24 }}>
+            <Skeleton style={{ height: 180, borderRadius: 24, marginBottom: 24 }} />
+            <View style={{ flexDirection: 'row', gap: 12, marginBottom: 24 }}>
+                <Skeleton style={{ flex: 1, height: 60, borderRadius: 18 }} />
+                <Skeleton style={{ flex: 1, height: 60, borderRadius: 18 }} />
+            </View>
+            {[1,2,3].map(i => (
+                <Skeleton key={i} style={{ height: 80, borderRadius: 16, marginBottom: 16 }} />
+            ))}
+        </View>
+      </SafeAreaView>
     );
   }
 
@@ -142,11 +186,11 @@ export default function HomeScreen() {
                 <View>
                     <Text style={styles.balanceLabel}>{t('home.balance')}</Text>
                     <Text style={styles.balanceAmount}>
-                        {dashboard ? `$${Number(dashboard.balance).toFixed(2)}` : '...'}
+                        {dashboard ? (isBalanceVisible ? `$${Number(dashboard.balance).toFixed(2)}` : '••••••') : '...'}
                     </Text>
                 </View>
-                <TouchableOpacity style={styles.moreButton}>
-                    <Ionicons name="ellipsis-horizontal" size={24} color="white" />
+                <TouchableOpacity style={styles.moreButton} onPress={toggleBalance}>
+                    <Ionicons name={isBalanceVisible ? "eye-outline" : "eye-off-outline"} size={24} color="white" />
                 </TouchableOpacity>
             </View>
 
@@ -178,13 +222,22 @@ export default function HomeScreen() {
 
         {/* In-App Widget Section (Premium Look) */}
         <View style={styles.widgetRow}>
-            <TouchableOpacity style={[styles.miniWidget, { backgroundColor: colorScheme === 'dark' ? '#1E293B' : '#F3F4F6' }]}>
-                <Ionicons name="sparkles" size={20} color="#586EEF" />
-                <Text style={[styles.miniWidgetText, { color: colors.text }]}>{t('home.seeAll')}</Text>
+            <TouchableOpacity 
+                style={[styles.miniWidget, { backgroundColor: colorScheme === 'dark' ? '#1E293B' : '#F3F4F6' }]}
+                onPress={() => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    router.push('/statistics');
+                }}
+            >
+                <Ionicons name="trending-up" size={20} color="#586EEF" />
+                <Text style={[styles.miniWidgetText, { color: colors.text }]}>{t('tabs.stats')}</Text>
             </TouchableOpacity>
             <TouchableOpacity 
                 style={[styles.miniWidget, { backgroundColor: '#586EEF' }]} 
-                onPress={() => router.push('/add')}
+                onPress={() => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    router.push('/add');
+                }}
             >
                 <Ionicons name="add-circle" size={20} color="white" />
                 <Text style={[styles.miniWidgetText, { color: 'white' }]}>{t('add.addExpense')}</Text>

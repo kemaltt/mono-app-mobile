@@ -34,6 +34,9 @@ model User {
   status          UserStatus @default(ACTIVE)
   deleteRequestDate DateTime?
   deleteCode      String?    // OTP for deletion confirmation or undo
+  // AI Caching
+  aiSummary       String?
+  aiSummaryAt     DateTime?
 }
 
 enum UserStatus {
