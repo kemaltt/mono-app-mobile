@@ -176,6 +176,21 @@ export default function HomeScreen() {
             </View>
         </View>
 
+        {/* In-App Widget Section (Premium Look) */}
+        <View style={styles.widgetRow}>
+            <TouchableOpacity style={[styles.miniWidget, { backgroundColor: colorScheme === 'dark' ? '#1E293B' : '#F3F4F6' }]}>
+                <Ionicons name="sparkles" size={20} color="#586EEF" />
+                <Text style={[styles.miniWidgetText, { color: colors.text }]}>{t('home.seeAll')}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity 
+                style={[styles.miniWidget, { backgroundColor: '#586EEF' }]} 
+                onPress={() => router.push('/add')}
+            >
+                <Ionicons name="add-circle" size={20} color="white" />
+                <Text style={[styles.miniWidgetText, { color: 'white' }]}>{t('add.addExpense')}</Text>
+            </TouchableOpacity>
+        </View>
+
         {/* Transactions History Header */}
         <View style={styles.sectionHeader}>
             <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('home.recentTransactions')}</Text>
@@ -458,6 +473,25 @@ const styles = StyleSheet.create({
     height: '85%',
     alignSelf: 'center',
     borderRadius: 16,
-    marginLeft: 10,
+    marginHeight: 10,
   },
+  widgetRow: {
+      flexDirection: 'row',
+      gap: 12,
+      marginBottom: 24,
+  },
+  miniWidget: {
+      flex: 1,
+      height: 60,
+      borderRadius: 18,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 8,
+      paddingHorizontal: 12,
+  },
+  miniWidgetText: {
+      fontWeight: '700',
+      fontSize: 13,
+  }
 });

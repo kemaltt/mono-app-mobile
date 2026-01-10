@@ -140,7 +140,15 @@
     "categoryPlaceholder": "z.B. Essen, Transport",
     "spent": "Ausgegeben",
     "left": "Übrig",
-    "successCreated": "Budget erstellt!"
+    "successCreated": "Budget erstellt!",
+    "achievements": "Erfolge",
+    "level": "Level",
+    "xp": "XP",
+    "badges": "Abzeichen",
+    "saverTitle": "Konsequenter Sparer",
+    "saverDesc": "Bleiben Sie 30 Tage lang innerhalb Ihres Budgets",
+    "plannerTitle": "Meisterplaner",
+    "plannerDesc": "Erstellen Sie 5 verschiedene Budgetkategorien"
   },
   "transaction": {
     "details": "Transaktionsdetails",
@@ -179,6 +187,9 @@
     "addPhoto": "Foto hinzufügen",
     "addPDF": "PDF hinzufügen",
     "uploadingAttachment": "Wird hochgeladen...",
+    "scanReceipt": "Beleg scannen",
+    "scanning": "Beleg wird gescannt...",
+    "scanSuccess": "Beleg erfolgreich gescannt!",
     "saveTransaction": "Transaktion speichern",
     "errorFill": "Bitte Betrag und Kategorie ausfüllen",
     "errorSave": "Transaktion konnte nicht gespeichert werden"

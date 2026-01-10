@@ -140,7 +140,15 @@
     "categoryPlaceholder": "e.g. Food, Transport",
     "spent": "Spent",
     "left": "Left",
-    "successCreated": "Budget Created!"
+    "successCreated": "Budget Created!",
+    "achievements": "Achievements",
+    "level": "Level",
+    "xp": "XP",
+    "badges": "Badges",
+    "saverTitle": "Consistent Saver",
+    "saverDesc": "Keep within your budget for 30 days",
+    "plannerTitle": "Master Planner",
+    "plannerDesc": "Create 5 different budget categories"
   },
   "transaction": {
     "details": "Transaction Details",
@@ -179,6 +187,9 @@
     "addPhoto": "Add Photo",
     "addPDF": "Add PDF",
     "uploadingAttachment": "Uploading...",
+    "scanReceipt": "Scan Receipt",
+    "scanning": "Scanning receipt...",
+    "scanSuccess": "Receipt scanned successfully!",
     "saveTransaction": "Save Transaction",
     "errorFill": "Please fill in amount and category",
     "errorSave": "Could not save transaction"

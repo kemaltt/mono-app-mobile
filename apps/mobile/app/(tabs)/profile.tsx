@@ -116,6 +116,13 @@ export default function ProfileScreen() {
       icon: 'settings-outline', 
       onPress: () => router.push('/profile/settings') 
     },
+    { 
+      id: 'achievements', 
+      title: t('wallet.achievements'), 
+      subtitle: t('wallet.badges'), 
+      icon: 'trophy-outline', 
+      onPress: () => {} 
+    },
   ];
 
   return (
@@ -152,6 +159,17 @@ export default function ProfileScreen() {
             </View>
           </View>
           <Text style={styles.heroSubtitle}>{t('profile.welcomeProfile')}</Text>
+
+          {/* User Level / XP Bar */}
+          <View style={[styles.levelContainer, { backgroundColor: colorScheme === 'dark' ? '#1E293B' : '#F3F4F6' }]}>
+            <View style={styles.levelHeader}>
+                <Text style={[styles.levelLabel, { color: colors.text }]}>{t('wallet.level')} 5</Text>
+                <Text style={styles.xpLabel}>1,240 / 2,000 {t('wallet.xp')}</Text>
+            </View>
+            <View style={[styles.xpBarBackground, { backgroundColor: colorScheme === 'dark' ? '#334155' : '#E5E7EB' }]}>
+                <View style={[styles.xpBarFill, { width: '62%' }]} />
+            </View>
+          </View>
         </View>
 
         <View style={styles.gridContainer}>
@@ -277,4 +295,33 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
   },
+  levelContainer: {
+      marginTop: 20,
+      padding: 16,
+      borderRadius: 20,
+  },
+  levelHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: 10,
+  },
+  levelLabel: {
+      fontWeight: '700',
+      fontSize: 14,
+  },
+  xpLabel: {
+      fontSize: 12,
+      color: '#9CA3AF',
+  },
+  xpBarBackground: {
+      height: 8,
+      borderRadius: 4,
+      overflow: 'hidden',
+  },
+  xpBarFill: {
+      height: '100%',
+      backgroundColor: '#586EEF',
+      borderRadius: 4,
+  }
 });

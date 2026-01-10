@@ -140,7 +140,15 @@
     "categoryPlaceholder": "örn. Gıda, Ulaşım",
     "spent": "Harcanan",
     "left": "Kalan",
-    "successCreated": "Bütçe Oluşturuldu!"
+    "successCreated": "Bütçe Oluşturuldu!",
+    "achievements": "Başarımlar",
+    "level": "Seviye",
+    "xp": "XP",
+    "badges": "Rozetler",
+    "saverTitle": "İstikrarlı Tasarrufçu",
+    "saverDesc": "30 gün boyunca bütçenize sadık kalın",
+    "plannerTitle": "Usta Planlayıcı",
+    "plannerDesc": "5 farklı bütçe kategorisi oluşturun"
   },
   "transaction": {
     "details": "İşlem Detayları",
@@ -179,6 +187,9 @@
     "addPhoto": "Fotoğraf Ekle",
     "addPDF": "PDF Ekle",
     "uploadingAttachment": "Yükleniyor...",
+    "scanReceipt": "Fiş Tara",
+    "scanning": "Fiş taranıyor...",
+    "scanSuccess": "Fiş başarıyla tarandı!",
     "saveTransaction": "İşlemi Kaydet",
     "errorFill": "Lütfen tutar ve kategori alanlarını doldurun",
     "errorSave": "İşlem kaydedilemedi"

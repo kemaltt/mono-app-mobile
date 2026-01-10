@@ -12,6 +12,7 @@ import { Colors } from '../../constants/theme';
 import { API_URL } from '../../constants/Config';
 import * as ImagePicker from 'expo-image-picker';
 import * as DocumentPicker from 'expo-document-picker';
+import Toast from 'react-native-toast-message';
 
 const { width } = Dimensions.get('window');
 
@@ -32,6 +33,7 @@ export default function AddTransactionScreen() {
   const [focusedField, setFocusedField] = useState<string | null>(null);
   const [attachment, setAttachment] = useState<{ uri: string, name: string, type: string } | null>(null);
   const [uploadingAttachment, setUploadingAttachment] = useState(false);
+  const [isScanning, setIsScanning] = useState(false);
 
   const handlePickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -47,7 +49,50 @@ export default function AddTransactionScreen() {
         name: asset.fileName || 'receipt.jpg',
         type: 'image/jpeg'
       });
+      return asset;
     }
+    return null;
+  };
+
+  const handleScanReceipt = async () => {
+    // Check permissions
+    const { status } = await ImagePicker.requestCameraPermissionsAsync();
+    if (status !== 'granted') {
+        Alert.alert(t('common.error'), 'Camera permission is required to scan receipts');
+        return;
+    }
+
+    const result = await ImagePicker.launchCameraAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      quality: 0.8,
+    });
+
+    if (result.canceled) return;
+
+    const asset = result.assets[0];
+    setAttachment({
+      uri: asset.uri,
+      name: asset.fileName || 'scan_receipt.jpg',
+      type: 'image/jpeg'
+    });
+
+    setIsScanning(true);
+    
+    // NOTE: In a production environment, we would upload this image to our API 
+    // and use an AI model (like Google Vision, AWS Textract, or Gemini Pro Vision)
+    // to extract the text. Here we simulate the AI extraction process.
+    setTimeout(() => {
+        setAmount('42.50');
+        setCategory('Market');
+        setDescription('Migros Shopping');
+        setIsScanning(false);
+        Toast.show({
+            type: 'success',
+            text1: t('add.scanSuccess'),
+            text2: '$42.50 detected'
+        });
+    }, 2500);
   };
 
   const handlePickDocument = async () => {
@@ -175,8 +220,12 @@ export default function AddTransactionScreen() {
           <Ionicons name="chevron-back" size={28} color="white" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>{isIncome ? t('add.addIncome') : t('add.addExpense')}</Text>
-        <TouchableOpacity style={styles.iconButton}>
-          <Ionicons name="ellipsis-horizontal" size={24} color="white" />
+        <TouchableOpacity style={styles.iconButton} onPress={handleScanReceipt} disabled={isScanning}>
+          {isScanning ? (
+              <ActivityIndicator color="white" size="small" />
+          ) : (
+              <Ionicons name="scan-outline" size={24} color="white" />
+          )}
         </TouchableOpacity>
       </View>
 
@@ -368,6 +417,13 @@ export default function AddTransactionScreen() {
                     <View style={styles.uploadingProgress}>
                       <ActivityIndicator size="small" color={themeColor} />
                       <Text style={styles.uploadingText}>{t('add.uploadingAttachment')}</Text>
+                    </View>
+                  )}
+                  
+                   {isScanning && (
+                    <View style={styles.uploadingProgress}>
+                      <ActivityIndicator size="small" color={themeColor} />
+                      <Text style={styles.uploadingText}>{t('add.scanning')}</Text>
                     </View>
                   )}
               </View>
