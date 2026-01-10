@@ -6,6 +6,7 @@ import { serveStatic } from '@hono/node-server/serve-static'
 import auth from './routes/auth'
 import transactions from './routes/transactions'
 import profile from './routes/profile'
+import budgets from './routes/budgets'
 
 const app = new Hono()
 
@@ -21,6 +22,7 @@ app.get('/', (c) => {
 app.route('/auth', auth)
 app.route('/transactions', transactions)
 app.route('/profile', profile)
+app.route('/budgets', budgets)
 
 const port = 4040
 console.log(`Server is running on port ${port}`)

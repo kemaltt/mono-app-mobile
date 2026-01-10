@@ -14,7 +14,7 @@ import {
   Modal,
   Linking,
 } from "react-native";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter, Stack } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useEffect, useState } from "react";
 import { useAuth } from "../../context/auth";
@@ -300,6 +300,7 @@ export default function TransactionDetailScreen() {
         { backgroundColor: colorScheme === "dark" ? "#111827" : "#2D4BFF" },
       ]}
     >
+      <Stack.Screen options={{ headerShown: false }} />
       {/* Blue Header */}
       <View
         style={[

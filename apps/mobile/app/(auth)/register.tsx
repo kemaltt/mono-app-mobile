@@ -45,8 +45,9 @@ export default function RegisterScreen() {
     }
 
     // Email validation
+    const trimmedEmail = (email || '').toString().trim();
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
+    if (!emailRegex.test(trimmedEmail)) {
       setFieldErrors({ email: t('auth.invalidEmail') });
       return;
     }
@@ -66,7 +67,7 @@ export default function RegisterScreen() {
       const response = await fetch(`${API_URL}/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ firstName, lastName, email, password, timezone }),
+        body: JSON.stringify({ firstName, lastName, email: trimmedEmail, password, timezone }),
       });
 
       const data = await response.json();
@@ -78,7 +79,7 @@ export default function RegisterScreen() {
       // Instead of direct sign-in, redirect to verify
       router.push({
         pathname: '/(auth)/verify',
-        params: { email: email }
+        params: { email: trimmedEmail }
       });
       
     } catch (err: any) {

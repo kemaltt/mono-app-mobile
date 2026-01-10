@@ -1,12 +1,14 @@
 // @ts-nocheck
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert, Modal, Pressable, Animated } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert, Modal, Pressable, Animated, Switch } from 'react-native';
 import { useRouter, Stack } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useTheme } from '../../context/theme';
 import { Colors } from '../../constants/theme';
+import * as LocalAuthentication from 'expo-local-authentication';
+import * as SecureStore from 'expo-secure-store';
 
 export default function SettingsScreen() {
   const { t, i18n } = useTranslation();
@@ -17,6 +19,47 @@ export default function SettingsScreen() {
   const colors = Colors[colorScheme];
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(300)).current;
+  const [isBiometricEnabled, setIsBiometricEnabled] = useState(false);
+  const [isBiometricSupported, setIsBiometricSupported] = useState(false);
+  const [biometricLabel, setBiometricLabel] = useState('FaceID');
+
+  useEffect(() => {
+    checkBiometricStatus();
+  }, []);
+
+  const checkBiometricStatus = async () => {
+    const hasHardware = await LocalAuthentication.hasHardwareAsync();
+    const supportedTypes = await LocalAuthentication.supportedAuthenticationTypesAsync();
+    
+    setIsBiometricSupported(hasHardware);
+
+    if (supportedTypes.includes(LocalAuthentication.AuthenticationType.FACIAL_RECOGNITION)) {
+        setBiometricLabel('FaceID');
+    } else if (supportedTypes.includes(LocalAuthentication.AuthenticationType.FINGERPRINT)) {
+        setBiometricLabel('TouchID');
+    } else {
+        setBiometricLabel('Biometrics');
+    }
+
+    const storedPass = await SecureStore.getItemAsync('user_password');
+    setIsBiometricEnabled(!!storedPass);
+  };
+
+  const toggleBiometric = async (value: boolean) => {
+    if (value) {
+        const isEnrolled = await LocalAuthentication.isEnrolledAsync();
+        if (!isEnrolled) {
+            Alert.alert(t('common.error'), "No biometric records found. Please set up FaceID/TouchID on your device first.");
+            setIsBiometricEnabled(false);
+            return;
+        }
+        Alert.alert(t('common.info'), "Please log out and log in again to enable biometric authentication.");
+    } else {
+        await SecureStore.deleteItemAsync('user_email');
+        await SecureStore.deleteItemAsync('user_password');
+        setIsBiometricEnabled(false);
+    }
+  };
 
   const changeLanguage = async (lng: string) => {
     await i18n.changeLanguage(lng);
@@ -95,6 +138,13 @@ export default function SettingsScreen() {
     { icon: 'notifications-outline', label: t('profile.notifications'), onPress: () => {} },
     { icon: 'contrast-outline', label: t('profile.design'), onPress: showDesignPicker },
     { icon: 'language-outline', label: t('profile.language'), onPress: showLanguagePicker },
+    ...(isBiometricSupported ? [{ 
+        icon: biometricLabel === 'FaceID' ? 'scan-outline' : 'finger-print-outline', 
+        label: biometricLabel === 'FaceID' ? t('auth.loginWithFaceID') : t('auth.loginWithTouchID'), 
+        isSwitch: true, 
+        value: isBiometricEnabled, 
+        onValueChange: toggleBiometric 
+    }] : []),
     { icon: 'list-outline', label: 'Sonstiges', onPress: () => {} },
   ];
 
@@ -130,23 +180,39 @@ export default function SettingsScreen() {
       <ScrollView showsVerticalScrollIndicator={false}>
         <View style={styles.section}>
           {settingsItems.map((item, index) => (
-            <TouchableOpacity key={index} style={[styles.item, { borderBottomColor: colorScheme === 'dark' ? '#334155' : '#F3F4F6' }]} onPress={item.onPress}>
+            <TouchableOpacity 
+                key={index} 
+                style={[styles.item, { borderBottomColor: colorScheme === 'dark' ? '#334155' : '#F3F4F6' }]} 
+                onPress={item.onPress}
+                disabled={item.isSwitch}
+            >
               <View style={styles.itemLeft}>
                 <Ionicons name={item.icon} size={22} color={colorScheme === 'dark' ? '#9CA3AF' : '#4B5563'} />
                 <Text style={[styles.itemLabel, { color: colors.text }]}>{item.label}</Text>
               </View>
               <View style={styles.itemRight}>
-                {item.label === t('profile.design') && (
-                  <Text style={[styles.currentValueText, { color: colorScheme === 'dark' ? '#6B7280' : '#9CA3AF' }]}>
-                    {t(`profile.${theme}`)}
-                  </Text>
+                {item.isSwitch ? (
+                    <Switch
+                        trackColor={{ false: "#767577", true: "#81b0ff" }}
+                        thumbColor={item.value ? "#586EEF" : "#f4f3f4"}
+                        onValueChange={item.onValueChange}
+                        value={item.value}
+                    />
+                ) : (
+                    <>
+                        {item.label === t('profile.design') && (
+                        <Text style={[styles.currentValueText, { color: colorScheme === 'dark' ? '#6B7280' : '#9CA3AF' }]}>
+                            {t(`profile.${theme}`)}
+                        </Text>
+                        )}
+                        {item.label === t('profile.language') && (
+                        <Text style={[styles.currentValueText, { color: colorScheme === 'dark' ? '#6B7280' : '#9CA3AF' }]}>
+                            {i18n.language === 'en' ? 'English' : i18n.language === 'tr' ? 'Türkçe' : 'Deutsch'}
+                        </Text>
+                        )}
+                        <Ionicons name="chevron-forward" size={20} color="#D1D5DB" />
+                    </>
                 )}
-                {item.label === t('profile.language') && (
-                  <Text style={[styles.currentValueText, { color: colorScheme === 'dark' ? '#6B7280' : '#9CA3AF' }]}>
-                    {i18n.language === 'en' ? 'English' : i18n.language === 'tr' ? 'Türkçe' : 'Deutsch'}
-                  </Text>
-                )}
-                <Ionicons name="chevron-forward" size={20} color="#D1D5DB" />
               </View>
             </TouchableOpacity>
           ))}

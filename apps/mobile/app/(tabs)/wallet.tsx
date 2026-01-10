@@ -1,5 +1,6 @@
 // @ts-nocheck
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, RefreshControl, Image } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, RefreshControl, Modal, TextInput, ActivityIndicator, KeyboardAvoidingView, Platform } from 'react-native';
+import LottieView from 'lottie-react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useEffect, useState, useCallback } from 'react';
 import { useAuth } from '../../context/auth';
@@ -8,6 +9,8 @@ import { API_URL } from '../../constants/Config';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../context/theme';
 import { Colors } from '../../constants/theme';
+import BudgetCard from '../../components/BudgetCard';
+import Toast from 'react-native-toast-message';
 
 export default function WalletScreen() {
   const { t, i18n } = useTranslation();
@@ -16,8 +19,14 @@ export default function WalletScreen() {
   const router = useRouter();
   const { token } = useAuth();
   const [dashboard, setDashboard] = useState(null);
-  const [transactions, setTransactions] = useState([]);
+  const [budgets, setBudgets] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [newName, setNewName] = useState('');
+  const [newAmount, setNewAmount] = useState('');
+  const [newCategory, setNewCategory] = useState('');
+  const [creating, setCreating] = useState(false);
+  const [successVisible, setSuccessVisible] = useState(false);
 
   const fetchData = useCallback(async () => {
     try {
@@ -30,12 +39,14 @@ export default function WalletScreen() {
       const dashData = await dashRes.json();
       setDashboard(dashData);
 
-      // Transactions for list
-      const transRes = await fetch(`${API_URL}/transactions?limit=10`, {
+      setDashboard(dashData);
+ 
+      // Budgets list
+      const budgetRes = await fetch(`${API_URL}/budgets`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
-      const transData = await transRes.json();
-      setTransactions(transData.transactions || []);
+      const budgetData = await budgetRes.json();
+      setBudgets(budgetData.budgets || []);
 
     } catch (error) {
       console.error(error);
@@ -53,6 +64,43 @@ export default function WalletScreen() {
     await fetchData();
     setRefreshing(false);
   }, [fetchData]);
+
+  const handleCreate = async () => {
+      if (!newName || !newAmount || !newCategory) {
+          Toast.show({type: 'error', text1: t('common.error'), text2: t('auth.fillAll')});
+          return;
+      }
+      setCreating(true);
+      try {
+          const res = await fetch(`${API_URL}/budgets`, {
+            method: 'POST',
+            headers: { 
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                name: newName,
+                amount: parseFloat(newAmount),
+                category: newCategory
+            })
+          });
+          const data = await res.json();
+          if (res.ok) {
+              setModalVisible(false);
+              setNewName(''); setNewAmount(''); setNewCategory('');
+              fetchData();
+              setSuccessVisible(true);
+              setTimeout(() => setSuccessVisible(false), 2000); // Auto hide
+              // Toast.show({type: 'success', text1: 'Success', text2: 'Budget created'});
+          } else {
+              Toast.show({type: 'error', text1: 'Error', text2: data.error || 'Failed'});
+          }
+      } catch (e) {
+          console.error(e);
+      } finally {
+          setCreating(false);
+      }
+  };
 
   return (
     <View style={[styles.container, { backgroundColor: colorScheme === 'dark' ? '#111827' : '#2D4BFF' }]}>
@@ -74,110 +122,125 @@ export default function WalletScreen() {
           contentContainerStyle={styles.scrollContent}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#2D4BFF']} />}
         >
-          {/* Balance Section */}
-          <View style={styles.balanceContainer}>
-            <Text style={styles.balanceLabel}>{t('wallet.balance')}</Text>
-            <Text style={[styles.balanceAmount, { color: colors.text }]}>
-              $ {dashboard ? Number(dashboard.balance).toLocaleString(i18n.language, { minimumFractionDigits: 2 }) : '...'}
-            </Text>
-
-            {/* Action Buttons */}
-            <View style={styles.actionsRow}>
-              <View style={styles.actionItem}>
-                <TouchableOpacity 
-                   style={[styles.actionButton, { backgroundColor: colorScheme === 'dark' ? '#1E293B' : '#FFFFFF', borderColor: '#2D4BFF' }]}
-                   onPress={() => router.push('/(tabs)/add')}
-                >
-                  <Ionicons name="add" size={32} color="#2D4BFF" />
-                </TouchableOpacity>
-                <Text style={styles.actionLabel}>{t('wallet.add')}</Text>
-              </View>
-
-              <View style={styles.actionItem}>
-                <TouchableOpacity style={[styles.actionButton, { backgroundColor: colorScheme === 'dark' ? '#1E293B' : '#FFFFFF', borderColor: '#2D4BFF' }]}>
-                  <Ionicons name="grid" size={26} color="#2D4BFF" />
-                </TouchableOpacity>
-                <Text style={styles.actionLabel}>{t('wallet.pay')}</Text>
-              </View>
-
-              <View style={styles.actionItem}>
-                <TouchableOpacity style={[styles.actionButton, { backgroundColor: colorScheme === 'dark' ? '#1E293B' : '#FFFFFF', borderColor: '#2D4BFF' }]}>
-                  <Ionicons name="paper-plane" size={26} color="#2D4BFF" />
-                </TouchableOpacity>
-                <Text style={styles.actionLabel}>{t('wallet.send')}</Text>
-              </View>
-            </View>
+          {/* Budget List Header */}
+          <View style={styles.listHeader}>
+             <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('wallet.history')}</Text>
+             <TouchableOpacity style={styles.smallAddButton} onPress={() => setModalVisible(true)}>
+                 <Ionicons name="add" size={24} color="white" />
+             </TouchableOpacity>
           </View>
 
-          {/* Transactions History */}
-          <View style={styles.transactionsSection}>
-            <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('wallet.history')}</Text>
-            
-            {transactions.map((item) => (
-              <TransactionItem 
-                 key={item.id}
-                 item={item}
-                 lang={i18n.language}
-                 onPress={() => router.push(`/transaction/${item.id}`)}
-                 colors={colors}
-                 colorScheme={colorScheme}
-              />
-            ))}
-
-            {transactions.length === 0 && (
-              <View style={styles.emptyContainer}>
-                <Ionicons name="wallet-outline" size={48} color={colorScheme === 'dark' ? '#4B5563' : '#D1D5DB'} />
-                <Text style={[styles.emptyText, { color: colorScheme === 'dark' ? '#9CA3AF' : '#9CA3AF' }]}>{t('wallet.empty')}</Text>
-              </View>
-            )}
+          <View style={styles.budgetsList}>
+             {budgets.map((budget: any) => (
+                 <BudgetCard 
+                    key={budget.id}
+                    name={budget.name}
+                    amount={Number(budget.amount)}
+                    spent={Number(budget.spent)}
+                    category={budget.category}
+                    currency={dashboard?.currency === 'EUR' ? '€' : '$'}
+                 />
+             ))}
+                 
+             {budgets.length === 0 && (
+                <View style={styles.emptyContainer}>
+                    <Ionicons name="pie-chart-outline" size={48} color={colorScheme === 'dark' ? '#4B5563' : '#D1D5DB'} />
+                    <Text style={[styles.emptyText, { color: colorScheme === 'dark' ? '#9CA3AF' : '#9CA3AF' }]}>{t('wallet.empty')}</Text>
+                    <TouchableOpacity style={styles.createButton} onPress={() => setModalVisible(true)}>
+                        <Text style={styles.createButtonText}>{t('wallet.createNew')}</Text>
+                    </TouchableOpacity>
+                </View>
+             )}
           </View>
         </ScrollView>
+
+        {/* Create Modal */}
+        <Modal
+            visible={modalVisible}
+            transparent
+            animationType="slide"
+            onRequestClose={() => setModalVisible(false)}
+        >
+            <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={styles.modalOverlay}>
+                <View style={[styles.modalContent, { backgroundColor: colorScheme === 'dark' ? '#1E293B' : '#FFFFFF' }]}>
+                    <View style={styles.modalHeader}>
+                        <Text style={[styles.modalTitle, { color: colors.text }]}>{t('wallet.createNew')}</Text>
+                        <TouchableOpacity onPress={() => setModalVisible(false)}>
+                            <Ionicons name="close" size={24} color={colors.text} />
+                        </TouchableOpacity>
+                    </View>
+                    
+                    <View style={styles.inputContainer}>
+                        <Text style={styles.inputLabel}>{t('wallet.budgetName')}</Text>
+                        <TextInput 
+                            style={[styles.input, { backgroundColor: colorScheme === 'dark' ? '#334155' : '#F3F4F6', color: colors.text }]}
+                            placeholder={t('wallet.namePlaceholder')}
+                            placeholderTextColor="#9CA3AF"
+                            value={newName}
+                            onChangeText={setNewName}
+                        />
+                    </View>
+                    
+                    <View style={styles.inputContainer}>
+                        <Text style={styles.inputLabel}>{t('wallet.budgetAmount')}</Text>
+                        <TextInput 
+                            style={[styles.input, { backgroundColor: colorScheme === 'dark' ? '#334155' : '#F3F4F6', color: colors.text }]}
+                            placeholder={t('wallet.amountPlaceholder')}
+                            placeholderTextColor="#9CA3AF"
+                            keyboardType="numeric"
+                            value={newAmount}
+                            onChangeText={setNewAmount}
+                        />
+                    </View>
+
+                    <View style={styles.inputContainer}>
+                         <Text style={styles.inputLabel}>{t('wallet.budgetCategory')}</Text>
+                         <TextInput 
+                            style={[styles.input, { backgroundColor: colorScheme === 'dark' ? '#334155' : '#F3F4F6', color: colors.text }]}
+                            placeholder={t('wallet.categoryPlaceholder')}
+                            placeholderTextColor="#9CA3AF"
+                            value={newCategory}
+                            onChangeText={setNewCategory}
+                        />
+                    </View>
+
+                    <TouchableOpacity 
+                        style={[styles.modalButton, creating && { opacity: 0.7 }]} 
+                        onPress={handleCreate}
+                        disabled={creating}
+                    >
+                        {creating ? <ActivityIndicator color="white" /> : <Text style={styles.modalButtonText}>{t('wallet.create')}</Text>}
+                    </TouchableOpacity>
+                </View>
+            </KeyboardAvoidingView>
+        </Modal>
+
+        {/* Success Modal */}
+        <Modal
+            visible={successVisible}
+            transparent
+            animationType="fade"
+        >
+            <View style={styles.successOverlay}>
+                <View style={[styles.successContent, { backgroundColor: colorScheme === 'dark' ? '#1E293B' : '#FFFFFF' }]}>
+                    <LottieView
+                        source={require('../../assets/lottie/success.json')}
+                        autoPlay
+                        loop={false}
+                        style={{ width: 100, height: 100 }}
+                    />
+                    <Text style={[styles.successText, { color: colors.text }]}>{t('wallet.successCreated')}</Text>
+                </View>
+            </View>
+        </Modal>
+
+
       </View>
     </View>
   );
 }
 
-function TransactionItem({ item, onPress, lang, colors, colorScheme }) {
-  const isIncome = item.type === 'INCOME';
-  
-  const getIconContainerColor = () => {
-    if (colorScheme === 'dark') return '#111827';
-    switch(item.category?.toLowerCase()) {
-      case 'upwork': return '#E8F5E9';
-      case 'paypal': return '#E3F2FD';
-      case 'transfer': return '#FFF3E0';
-      default: return '#F3F4F6';
-    }
-  };
 
-  return (
-    <TouchableOpacity style={styles.transactionCard} onPress={onPress}>
-      <View style={styles.transactionLeft}>
-        <View style={[styles.iconBox, { backgroundColor: getIconContainerColor() }]}>
-          <Ionicons 
-             name={isIncome ? "arrow-down-outline" : "arrow-up-outline"} 
-             size={20} 
-             color={isIncome ? "#10B981" : "#EF4444"} 
-          />
-        </View>
-        <View style={styles.transactionTextInfo}>
-          <Text style={[styles.transactionTitle, { color: colors.text }]} numberOfLines={1}>{item.category || 'Transaction'}</Text>
-          {item.description ? (
-            <Text style={{ fontSize: 13, color: colorScheme === 'dark' ? '#9CA3AF' : '#6B7280', marginBottom: 2 }} numberOfLines={1}>
-              {item.description}
-            </Text>
-          ) : null}
-          <Text style={styles.transactionDate}>
-            {new Date(item.date).toLocaleDateString(lang, { month: 'short', day: 'numeric', year: 'numeric' })}
-          </Text>
-        </View>
-      </View>
-      <Text style={[styles.transactionAmount, { color: isIncome ? '#10B981' : '#EF4444' }]}>
-        {isIncome ? '+ ' : '- '} $ {Number(item.amount).toLocaleString(lang, { minimumFractionDigits: 2 })}
-      </Text>
-    </TouchableOpacity>
-  );
-}
 
 const styles = StyleSheet.create({
   container: {
@@ -207,95 +270,28 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 40,
     marginTop: -20,
   },
-  scrollContent: {
-    paddingTop: 40,
-    paddingBottom: 120,
-  },
-  balanceContainer: {
-    alignItems: 'center',
-    marginBottom: 40,
-  },
-  balanceLabel: {
-    fontSize: 16,
-    color: '#9CA3AF',
-    fontWeight: '500',
-    marginBottom: 8,
-  },
-  balanceAmount: {
-    fontSize: 40,
-    fontWeight: '800',
-    color: '#111827',
-    marginBottom: 40,
-  },
-  actionsRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    width: '100%',
-    paddingHorizontal: 20,
-  },
-  actionItem: {
-    alignItems: 'center',
-  },
-  actionButton: {
-    width: 70,
-    height: 70,
-    borderRadius: 35,
-    borderWidth: 1,
-    borderColor: '#2D4BFF',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 10,
-    backgroundColor: '#FFFFFF',
-  },
-  actionLabel: {
-    fontSize: 14,
-    color: '#6B7280',
-    fontWeight: '600',
-  },
-  transactionsSection: {
-    paddingHorizontal: 25,
-    marginTop: 20,
+  listHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      paddingHorizontal: 25,
+      marginBottom: 15,
   },
   sectionTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#111827',
-    marginBottom: 25,
-  },
-  transactionCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 25,
-  },
-  transactionLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  iconBox: {
-    width: 50,
-    height: 50,
-    borderRadius: 15,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 15,
-  },
-  transactionTextInfo: {
-    justifyContent: 'center',
-  },
-  transactionTitle: {
-    fontSize: 17,
+    fontSize: 20,
     fontWeight: '700',
     color: '#111827',
   },
-  transactionDate: {
-    fontSize: 14,
-    color: '#9CA3AF',
-    marginTop: 2,
+  smallAddButton: {
+      backgroundColor: '#2D4BFF',
+      width: 36,
+      height: 36,
+      borderRadius: 12,
+      justifyContent: 'center',
+      alignItems: 'center',
   },
-  transactionAmount: {
-    fontSize: 17,
-    fontWeight: '700',
+  budgetsList: {
+      paddingHorizontal: 25,
   },
   emptyContainer: {
     alignItems: 'center',
@@ -308,5 +304,91 @@ const styles = StyleSheet.create({
     color: '#9CA3AF',
     fontSize: 14,
     fontWeight: '500',
-  }
+    marginBottom: 10,
+  },
+  createButton: {
+      backgroundColor: '#EEF2FF',
+      paddingHorizontal: 20,
+      paddingVertical: 10,
+      borderRadius: 20,
+  },
+  createButtonText: {
+      color: '#586EEF',
+      fontWeight: '600',
+  },
+  // Modal
+  modalOverlay: {
+      flex: 1,
+      justifyContent: 'flex-end',
+      backgroundColor: 'rgba(0,0,0,0.5)',
+  },
+  modalContent: {
+      backgroundColor: '#FFFFFF',
+      borderTopLeftRadius: 30,
+      borderTopRightRadius: 30,
+      padding: 25,
+      paddingBottom: 40,
+  },
+  modalHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: 25,
+  },
+  modalTitle: {
+      fontSize: 20,
+      fontWeight: 'bold',
+  },
+  inputContainer: {
+      marginBottom: 15,
+  },
+  inputLabel: {
+      fontSize: 14,
+      color: '#6B7280',
+      marginBottom: 8,
+      fontWeight: '500',
+  },
+  input: {
+      backgroundColor: '#F9FAFB',
+      padding: 15,
+      borderRadius: 12,
+      fontSize: 16,
+  },
+  modalButton: {
+      backgroundColor: '#2D4BFF',
+      padding: 18,
+      borderRadius: 16,
+      alignItems: 'center',
+      marginTop: 10,
+  },
+  modalButtonText: {
+      color: 'white',
+      fontWeight: 'bold',
+      fontSize: 16,
+  },
+   successOverlay: {
+       flex: 1,
+       justifyContent: 'center',
+       alignItems: 'center',
+       backgroundColor: 'rgba(0,0,0,0.3)',
+   },
+   successContent: {
+       padding: 24,
+       borderRadius: 24,
+       alignItems: 'center',
+       justifyContent: 'center',
+       width: 180,
+       height: 180,
+       shadowColor: "#000",
+       shadowOffset: { width: 0, height: 10 },
+       shadowOpacity: 0.1,
+       shadowRadius: 20,
+       elevation: 5,
+   },
+   successText: {
+       fontSize: 15,
+       fontWeight: '600',
+       marginTop: 5,
+       textAlign: 'center',
+   },
 });

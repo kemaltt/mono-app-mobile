@@ -26,6 +26,9 @@
     "haveAccount": "Already have an account?",
     "loggingIn": "Logging in...",
     "creatingAccount": "Creating Account...",
+    "loginWithFaceID": "Login with FaceID",
+    "loginWithTouchID": "Login with TouchID",
+    "biometricAuthFailed": "Biometric authentication failed",
     "fillAll": "Please fill in all fields",
     "addPicture": "Add Picture",
     "profilePicture": "PROFILE PICTURE",
@@ -120,13 +123,24 @@
     "noTransactions": "No transactions found for this type."
   },
   "wallet": {
-    "title": "Wallet",
+    "title": "Budgets",
     "balance": "Total Balance",
-    "add": "Add",
+    "add": "Add Budget",
     "pay": "Pay",
     "send": "Send",
-    "history": "Transactions History",
-    "empty": "No transactions yet"
+    "history": "My Budgets",
+    "empty": "No budgets yet. Create one to start tracking!",
+    "createNew": "Create New Budget",
+    "budgetName": "Budget Name",
+    "budgetAmount": "Budget Amount (Monthly)",
+    "budgetCategory": "Category",
+    "create": "Create Budget",
+    "namePlaceholder": "e.g. Groceries",
+    "amountPlaceholder": "0.00",
+    "categoryPlaceholder": "e.g. Food, Transport",
+    "spent": "Spent",
+    "left": "Left",
+    "successCreated": "Budget Created!"
   },
   "transaction": {
     "details": "Transaction Details",

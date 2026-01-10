@@ -26,6 +26,9 @@
     "haveAccount": "Bereits ein Konto?",
     "loggingIn": "Einloggen...",
     "creatingAccount": "Konto wird erstellt...",
+    "loginWithFaceID": "Mit FaceID anmelden",
+    "loginWithTouchID": "Mit TouchID anmelden",
+    "biometricAuthFailed": "Biometrische Authentifizierung fehlgeschlagen",
     "fillAll": "Bitte alle Felder ausfüllen",
     "addPicture": "Bild hinzufügen",
     "profilePicture": "PROFILBILD",
@@ -120,13 +123,24 @@
     "noTransactions": "Keine Transaktionen für diesen Typ gefunden."
   },
   "wallet": {
-    "title": "Brieftasche",
+    "title": "Budgets",
     "balance": "Gesamtguthaben",
-    "add": "Hinzufügen",
+    "add": "Budget hinzufügen",
     "pay": "Bezahlen",
     "send": "Senden",
-    "history": "Transaktionsverlauf",
-    "empty": "Noch keine Transaktionen"
+    "history": "Meine Budgets",
+    "empty": "Noch keine Budgets. Erstellen Sie eines, um mit dem Tracking zu beginnen!",
+    "createNew": "Neues Budget erstellen",
+    "budgetName": "Budget Name",
+    "budgetAmount": "Budget Betrag (Monatlich)",
+    "budgetCategory": "Kategorie",
+    "create": "Budget erstellen",
+    "namePlaceholder": "z.B. Lebensmittel",
+    "amountPlaceholder": "0.00",
+    "categoryPlaceholder": "z.B. Essen, Transport",
+    "spent": "Ausgegeben",
+    "left": "Übrig",
+    "successCreated": "Budget erstellt!"
   },
   "transaction": {
     "details": "Transaktionsdetails",

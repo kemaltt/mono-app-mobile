@@ -1,7 +1,7 @@
 // @ts-nocheck
 import { View, Text, TextInput, TouchableOpacity, Platform, StyleSheet, KeyboardAvoidingView, ScrollView, Image, Dimensions } from 'react-native';
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { useAuth } from '../../context/auth';
 import { Ionicons } from '@expo/vector-icons';
@@ -11,6 +11,8 @@ import * as Localization from 'expo-localization';
 const { width, height } = Dimensions.get('window');
 import { API_URL } from '../../constants/Config';
 import Toast from 'react-native-toast-message';
+import * as LocalAuthentication from 'expo-local-authentication';
+import * as SecureStore from 'expo-secure-store';
 
 export default function LoginScreen() {
   const { t } = useTranslation();
@@ -21,23 +23,72 @@ export default function LoginScreen() {
   const [loading, setLoading] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<{[key: string]: string}>({});
   const [showPassword, setShowPassword] = useState(false);
+  const [isBiometricAvailable, setIsBiometricAvailable] = useState(false);
 
-  const handleLogin = async () => {
+  useEffect(() => {
+    (async () => {
+      const hasHardware = await LocalAuthentication.hasHardwareAsync();
+      const isEnrolled = await LocalAuthentication.isEnrolledAsync();
+      if (hasHardware && isEnrolled) {
+        setIsBiometricAvailable(true);
+      }
+    })();
+  }, []);
+
+  const handleBiometricLogin = async () => {
+    try {
+      const result = await LocalAuthentication.authenticateAsync({
+        promptMessage: t('auth.loginWithFaceID'),
+        fallbackLabel: t('common.cancel'),
+      });
+
+      if (result.success) {
+        const storedEmail = await SecureStore.getItemAsync('user_email');
+        const storedPass = await SecureStore.getItemAsync('user_password');
+
+        if (storedEmail && storedPass) {
+            setEmail(storedEmail);
+            setPassword(storedPass);
+            await handleLogin(storedEmail, storedPass);
+        } else {
+            Toast.show({
+                type: 'info',
+                text1: t('common.info'),
+                text2: "Please login manually once to enable FaceID",
+            });
+        }
+      }
+    } catch (e) {
+        console.log(e);
+    }
+  };
+
+  const handleLogin = async (manualEmail?: any, manualPass?: string) => {
+    const loginEmail = (typeof manualEmail === 'string' ? manualEmail : email || '').toString().trim();
+    const loginPass = typeof manualPass === 'string' ? manualPass : password;
+
     const newErrors: {[key: string]: string} = {};
-    if (!email) newErrors.email = t('auth.fillAll');
-    if (!password) newErrors.password = t('auth.fillAll');
+    if (!loginEmail) newErrors.email = t('auth.fillAll');
+    if (!loginPass) newErrors.password = t('auth.fillAll');
 
     if (Object.keys(newErrors).length > 0) {
       setFieldErrors(newErrors);
       return;
     }
 
-    // Email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
+    // Normalize email: remove all whitespace-like characters and convert to lowercase
+    const normalizedEmail = loginEmail.replace(/\s/g, '').toLowerCase();
+    
+    // Standard email regex
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    
+    if (!emailRegex.test(normalizedEmail)) {
+      console.log('Validation failed for email:', `"${normalizedEmail}"`);
       setFieldErrors({ email: t('auth.invalidEmail') });
       return;
     }
+
+    const finalEmail = normalizedEmail;
 
     setFieldErrors({});
     setLoading(true);
@@ -47,7 +98,7 @@ export default function LoginScreen() {
       const response = await fetch(`${API_URL}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password, timezone }),
+        body: JSON.stringify({ email: finalEmail, password: loginPass, timezone }),
       });
 
       const data = await response.json();
@@ -64,6 +115,10 @@ export default function LoginScreen() {
       }
 
       await signIn(data.token, data.user);
+      
+      // Save credentials for biometrics
+      await SecureStore.setItemAsync('user_email', finalEmail);
+      await SecureStore.setItemAsync('user_password', loginPass);
       
     } catch (err: any) {
       const message = typeof err.message === 'object' ? 'An unexpected error occurred' : err.message;
@@ -111,7 +166,7 @@ export default function LoginScreen() {
                     placeholderTextColor="#9CA3AF"
                     value={email}
                     onChangeText={(text) => {
-                      setEmail(text);
+                      setEmail(text.trim());
                       if (fieldErrors.email) {
                         const newErrs = { ...fieldErrors };
                         delete newErrs.email;
@@ -169,6 +224,15 @@ export default function LoginScreen() {
                 </Text>
               </TouchableOpacity>
            </View>
+           
+           {isBiometricAvailable && (
+             <TouchableOpacity 
+               onPress={handleBiometricLogin}
+               style={styles.biometricButton}
+             >
+                <Ionicons name="finger-print-outline" size={32} color="#586EEF" />
+             </TouchableOpacity>
+           )}
         </View>
 
         <View style={styles.footer}>
@@ -325,4 +389,9 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 14,
   },
+  biometricButton: {
+    marginTop: 20,
+    alignItems: 'center',
+    padding: 10,
+  }
 });

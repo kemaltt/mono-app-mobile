@@ -26,6 +26,9 @@
     "haveAccount": "Zaten hesabınız var mı?",
     "loggingIn": "Giriş yapılıyor...",
     "creatingAccount": "Hesap oluşturuluyor...",
+    "loginWithFaceID": "FaceID ile Giriş Yap",
+    "loginWithTouchID": "TouchID ile Giriş Yap",
+    "biometricAuthFailed": "Biyometrik doğrulama başarısız oldu",
     "fillAll": "Lütfen tüm alanları doldurun",
     "addPicture": "Resim Ekle",
     "profilePicture": "PROFİL RESMİ",
@@ -120,13 +123,24 @@
     "noTransactions": "Bu tür için işlem bulunamadı."
   },
   "wallet": {
-    "title": "Cüzdan",
+    "title": "Bütçeler",
     "balance": "Toplam Bakiye",
-    "add": "Ekle",
+    "add": "Bütçe Ekle",
     "pay": "Öde",
     "send": "Gönder",
-    "history": "İşlem Geçmişi",
-    "empty": "Henüz işlem yok"
+    "history": "Bütçelerim",
+    "empty": "Henüz bütçeniz yok. Takip etmek için bir tane oluşturun!",
+    "createNew": "Yeni Bütçe Oluştur",
+    "budgetName": "Bütçe Adı",
+    "budgetAmount": "Bütçe Tutarı (Aylık)",
+    "budgetCategory": "Kategori",
+    "create": "Bütçe Oluştur",
+    "namePlaceholder": "örn. Market Harcaması",
+    "amountPlaceholder": "0.00",
+    "categoryPlaceholder": "örn. Gıda, Ulaşım",
+    "spent": "Harcanan",
+    "left": "Kalan",
+    "successCreated": "Bütçe Oluşturuldu!"
   },
   "transaction": {
     "details": "İşlem Detayları",

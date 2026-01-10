@@ -1,3 +1,4 @@
+// @ts-nocheck
 import '../i18n/index';
 import { Stack } from 'expo-router';
 import { useFonts } from 'expo-font';
@@ -48,6 +49,9 @@ const toastConfig = {
   ),
 };
 
+import { useAuth } from '../context/auth';
+import { View, ActivityIndicator } from 'react-native';
+
 export default function RootLayout() {
   const [loaded] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
@@ -72,6 +76,8 @@ export default function RootLayout() {
 
 function RootLayoutContent() {
   const { colorScheme } = useTheme();
+  const { isLoading } = useAuth();
+
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
@@ -83,13 +89,12 @@ function RootLayoutContent() {
             <Stack.Screen name="modal" options={{ presentation: 'modal', headerShown: false }} />
             <Stack.Screen name="(auth)" options={{ headerShown: false }} />
             <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-            <Stack.Screen name="profile" options={{ headerShown: false }} />
+            {/* <Stack.Screen name="profile" options={{ headerShown: false }} /> */}
             <Stack.Screen name="transaction/[id]" options={{ headerShown: false }} />
           </Stack>
           <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
           <Toast config={toastConfig} topOffset={60} />
         </NavigationThemeProvider>
       </AuthProvider>
-    </GestureHandlerRootView>
-  );
+    </GestureHandlerRootView>  );
 }
