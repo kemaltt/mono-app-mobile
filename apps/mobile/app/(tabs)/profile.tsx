@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView, Dimensions, ActivityIndicator } from 'react-native';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../context/auth';
 import { useRouter, Stack } from 'expo-router';
@@ -20,11 +20,26 @@ export default function ProfileScreen() {
   const router = useRouter();
   const { t } = useTranslation();
   const [uploading, setUploading] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // Simulate initial loading to show ActivityIndicator and hide bundling artifact
+    const timer = setTimeout(() => setLoading(false), 150);
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleLogout = async () => {
     await signOut();
     router.replace('/onboarding');
   };
+
+  if (loading) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.background }}>
+        <ActivityIndicator size="small" color="#007AFF" />
+      </View>
+    );
+  }
 
   const handleImagePick = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({

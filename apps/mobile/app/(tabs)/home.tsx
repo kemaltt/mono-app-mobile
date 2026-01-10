@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { View, Text, ScrollView, TouchableOpacity, Platform, RefreshControl, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Platform, RefreshControl, StyleSheet, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { Swipeable } from 'react-native-gesture-handler';
@@ -23,10 +23,12 @@ export default function HomeScreen() {
   const [dashboard, setDashboard] = useState<any>(null);
   const [transactions, setTransactions] = useState<any[]>([]);
   const [refreshing, setRefreshing] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  const fetchData = useCallback(async () => {
+  const fetchData = useCallback(async (isRefreshing = false) => {
     try {
         if (!token) return;
+        if (!isRefreshing) setLoading(true);
 
         // Fetch Dashboard
         const dashRes = await fetch(`${API_URL}/transactions/dashboard`, {
@@ -44,6 +46,8 @@ export default function HomeScreen() {
 
     } catch (error) {
         console.error(error);
+    } finally {
+        setLoading(false);
     }
   }, [token]);
 
@@ -55,9 +59,18 @@ export default function HomeScreen() {
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    await fetchData();
+    await fetchData(true);
     setRefreshing(false);
   }, [fetchData]);
+
+  if (loading && !refreshing) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.background }}>
+        {/* <ActivityIndicator size="large" color={colors.primary} /> */}
+        <ActivityIndicator size="small" color="#007AFF" />
+      </View>
+    );
+  }
 
   const handleDeleteTransaction = async (id: string) => {
     try {

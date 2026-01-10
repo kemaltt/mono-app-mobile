@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useRouter, useSegments } from 'expo-router';
+import { useRouter, useSegments, useRootNavigationState } from 'expo-router';
 
 // Define context shape
 interface AuthContextType {
@@ -38,6 +38,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [hasSeenOnboarding, setHasSeenOnboarding] = useState(false);
   const router = useRouter();
   const segments = useSegments();
+  const navigationState = useRootNavigationState();
 
   useEffect(() => {
     // Check for stored token on mount
@@ -66,27 +67,36 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
-    if (isLoading) return;
+    // 1. Don't do anything if loading or navigation is not ready
+    if (isLoading || !navigationState?.key) return;
 
-    const inAuthGroup = segments[0] === '(auth)';
-    const inOnboarding = segments[0] === 'onboarding';
+    const rootSegment = segments[0];
 
+    // 2. Identify where we are and where we should be
     if (!hasSeenOnboarding) {
-      if (!inOnboarding) {
-        router.replace('/onboarding');
+      if (rootSegment !== 'onboarding') {
+        const timer = setTimeout(() => router.replace('/onboarding'), 1);
+        return () => clearTimeout(timer);
       }
       return;
     }
 
-    // Determine redirection if onboarding is seen
-    if (!token && !inAuthGroup && !inOnboarding) {
-      // Redirect to login if a user has seen onboarding but has no token and is not in the auth group and not on onboarding
-      router.replace('/(auth)/login');
-    } else if (token && inAuthGroup) {
-      // Redirect to home if token exists and trying to access auth pages
-      router.replace('/(tabs)/home');
+    if (!token) {
+      // User has seen onboarding but no token
+      if (rootSegment !== '(auth)') {
+        const timer = setTimeout(() => router.replace('/(auth)/login'), 1);
+        return () => clearTimeout(timer);
+      }
+    } else {
+      // User has token
+      // Redirect to home if on a guest page
+      const isGuestPage = !rootSegment || rootSegment === '(auth)' || rootSegment === 'onboarding' || rootSegment === 'index';
+      if (isGuestPage) {
+        const timer = setTimeout(() => router.replace('/(tabs)/home'), 1);
+        return () => clearTimeout(timer);
+      }
     }
-  }, [token, segments, isLoading, hasSeenOnboarding]);
+  }, [token, segments[0], isLoading, hasSeenOnboarding, navigationState?.key]);
 
   const signIn = async (newToken: string, newUser: any) => {
     setToken(newToken);

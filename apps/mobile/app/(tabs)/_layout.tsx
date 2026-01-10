@@ -1,4 +1,5 @@
 // @ts-nocheck
+import React from 'react';
 import { Tabs } from 'expo-router';
 import { Platform, View, StyleSheet, Dimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
