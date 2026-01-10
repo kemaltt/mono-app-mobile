@@ -112,7 +112,7 @@ export default function HomeScreen() {
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity style={styles.headerLeft} onPress={() => router.push('/profile/edit')}>
+        <TouchableOpacity style={styles.headerLeft} onPress={() => router.push('/profile')}>
             {/* Avatar */}
               <View style={styles.avatar}>
                   {user?.avatarUrl ? (
