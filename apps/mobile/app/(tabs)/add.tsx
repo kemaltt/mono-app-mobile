@@ -55,26 +55,61 @@ export default function AddTransactionScreen() {
   };
 
   const handleScanReceipt = async () => {
-    // Check permissions
-    const { status } = await ImagePicker.requestCameraPermissionsAsync();
-    if (status !== 'granted') {
-        Alert.alert(t('common.error'), 'Camera permission is required to scan receipts');
-        return;
-    }
+    Alert.alert(
+      t('add.scanReceipt'),
+      t('add.chooseMethod'),
+      [
+        {
+          text: t('add.useCamera'),
+          onPress: async () => {
+            const { status } = await ImagePicker.requestCameraPermissionsAsync();
+            if (status !== 'granted') {
+                Alert.alert(t('common.error'), 'Camera permission is required');
+                return;
+            }
+            const result = await ImagePicker.launchCameraAsync({
+              mediaTypes: ['images'],
+              allowsEditing: true,
+              quality: 0.8,
+            });
+            if (!result.canceled) processScannedAsset(result.assets[0]);
+          }
+        },
+        {
+          text: t('add.useGallery'),
+          onPress: async () => {
+            const result = await ImagePicker.launchImageLibraryAsync({
+              mediaTypes: ['images'],
+              allowsEditing: true,
+              quality: 0.8,
+            });
+            if (!result.canceled) processScannedAsset(result.assets[0]);
+          }
+        },
+        {
+          text: t('add.usePDF'),
+          onPress: async () => {
+            const result = await DocumentPicker.getDocumentAsync({
+              type: 'application/pdf',
+            });
+            if (!result.canceled) processScannedAsset(result.assets[0]);
+          }
+        },
+        {
+          text: t('common.cancel'),
+          style: 'cancel'
+        }
+      ]
+    );
+  };
 
-    const result = await ImagePicker.launchCameraAsync({
-      mediaTypes: ['images'],
-      allowsEditing: true,
-      quality: 0.8,
-    });
-
-    if (result.canceled) return;
-
-    const asset = result.assets[0];
+  const processScannedAsset = async (asset: any) => {
+    const isPdf = asset.mimeType?.includes('pdf') || asset.name?.toLowerCase().endsWith('.pdf');
+    
     setAttachment({
       uri: asset.uri,
-      name: asset.fileName || 'scan_receipt.jpg',
-      type: 'image/jpeg'
+      name: asset.name || (isPdf ? 'receipt.pdf' : 'receipt.jpg'),
+      type: isPdf ? 'application/pdf' : 'image/jpeg'
     });
 
     setIsScanning(true);
@@ -83,8 +118,8 @@ export default function AddTransactionScreen() {
         const formData = new FormData();
         formData.append('file', {
             uri: asset.uri,
-            name: asset.fileName || 'scan_receipt.jpg',
-            type: 'image/jpeg'
+            name: asset.name || (isPdf ? 'receipt.pdf' : 'receipt.jpg'),
+            type: isPdf ? 'application/pdf' : 'image/jpeg'
         } as any);
 
         const response = await fetch(`${API_URL}/transactions/scan`, {
@@ -114,7 +149,7 @@ export default function AddTransactionScreen() {
         }
     } catch (e) {
         console.error('Scan error:', e);
-        Alert.alert(t('common.error'), 'Could not extract data from receipt');
+        Alert.alert(t('common.error'), 'Could not extract data from document');
     } finally {
         setIsScanning(false);
     }

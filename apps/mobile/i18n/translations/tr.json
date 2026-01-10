@@ -190,6 +190,10 @@
     "scanReceipt": "Fiş Tara",
     "scanning": "Fiş taranıyor...",
     "scanSuccess": "Fiş başarıyla tarandı!",
+    "chooseMethod": "Belgeyi nasıl eklemek istersiniz?",
+    "useCamera": "Fotoğraf Çek ve Tara",
+    "useGallery": "Galeriden Seç ve Tara",
+    "usePDF": "PDF Yükle ve Tara",
     "saveTransaction": "İşlemi Kaydet",
     "errorFill": "Lütfen tutar ve kategori alanlarını doldurun",
     "errorSave": "İşlem kaydedilemedi"

@@ -190,6 +190,10 @@
     "scanReceipt": "Beleg scannen",
     "scanning": "Beleg wird gescannt...",
     "scanSuccess": "Beleg erfolgreich gescannt!",
+    "chooseMethod": "Wie möchten Sie das Dokument hinzufügen?",
+    "useCamera": "Foto aufnehmen & scannen",
+    "useGallery": "Aus Galerie wählen & scannen",
+    "usePDF": "PDF hochladen & scannen",
     "saveTransaction": "Transaktion speichern",
     "errorFill": "Bitte Betrag und Kategorie ausfüllen",
     "errorSave": "Transaktion konnte nicht gespeichert werden"
