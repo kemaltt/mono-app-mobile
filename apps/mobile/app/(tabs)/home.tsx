@@ -168,6 +168,14 @@ export default function HomeScreen() {
             <View>
                 <Text style={[styles.greeting, { color: colorScheme === 'dark' ? '#9CA3AF' : '#6B7280' }]}>{getGreeting()}</Text>
                 <Text style={[styles.username, { color: colors.text }]}>{user?.firstName || 'User'}</Text>
+                
+                {/* XP Progress Bar */}
+                <View style={styles.xpProgressContainer}>
+                    <View style={styles.xpBarBackground}>
+                        <View style={[styles.xpBarFill, { width: `${(user?.xp % 100) || 0}%` }]} />
+                    </View>
+                    <Text style={styles.levelLabel}>Lv.{user?.level || 1}</Text>
+                </View>
             </View>
         </TouchableOpacity>
         <TouchableOpacity>
@@ -377,6 +385,31 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#1F2937',
     fontSize: 18,
+    lineHeight: 20,
+  },
+  xpProgressContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 4,
+    gap: 6,
+  },
+  xpBarBackground: {
+    width: 60,
+    height: 6,
+    backgroundColor: '#E5E7EB',
+    borderRadius: 3,
+    overflow: 'hidden',
+  },
+  xpBarFill: {
+    height: '100%',
+    backgroundColor: '#586EEF',
+    borderRadius: 3,
+  },
+  levelLabel: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: '#586EEF',
+    textTransform: 'uppercase',
   },
   scrollContent: {
     paddingHorizontal: 24,
