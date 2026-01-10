@@ -250,7 +250,7 @@ function TransactionItem({ icon, iconColor, iconBg, title, subtitle, date, amoun
                 <View style={[styles.transactionIcon, { backgroundColor: iconBg }]}>
                     <Ionicons name={icon} size={24} color={iconColor} />
                 </View>
-                <View>
+                <View style={{ flex: 1 }}>
                     <Text style={[styles.transactionTitle, { color: colors.text }]} numberOfLines={1}>{title}</Text>
                     {subtitle ? (
                       <Text style={[styles.transactionSubtitle, { color: colors.text === '#000000' ? '#6B7280' : '#9CA3AF' }]} numberOfLines={1}>{subtitle}</Text>
@@ -424,7 +424,6 @@ const styles = StyleSheet.create({
   },
   transactionItem: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
     backgroundColor: '#F9FAFB',
     padding: 16,
@@ -433,6 +432,8 @@ const styles = StyleSheet.create({
   transactionLeft: {
     flexDirection: 'row',
     alignItems: 'center',
+    flex: 1,
+    marginRight: 10,
   },
   transactionIcon: {
     width: 48,
