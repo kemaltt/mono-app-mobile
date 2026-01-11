@@ -15,6 +15,7 @@ import {
     Dimensions, 
     ActivityIndicator 
 } from 'react-native';
+import * as Haptics from 'expo-haptics';
 import { useState } from 'react';
 import { useRouter } from 'expo-router';
 import { useAuth } from '../../context/auth';
@@ -283,6 +284,9 @@ export default function AddTransactionScreen() {
             updateUser({ ...authUser, xp: data.xp, level: data.level });
         }
 
+        // Haptic Feedback for success
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+
         // Reset state before leaving
         resetForm();
 
@@ -341,13 +345,19 @@ export default function AddTransactionScreen() {
               <View style={[styles.typeSwitcher, { backgroundColor: colorScheme === 'dark' ? '#1E293B' : '#F3F4F6' }]}>
                 <TouchableOpacity 
                    style={[styles.typeBtn, isIncome && styles.typeBtnActiveIncome, isIncome && colorScheme === 'dark' && { backgroundColor: '#059669' }]}
-                   onPress={() => setType('INCOME')}
+                   onPress={() => {
+                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                        setType('INCOME');
+                   }}
                 >
                   <Text style={[styles.typeBtnText, isIncome && styles.typeBtnTextActive]}>{t('home.income')}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity 
                    style={[styles.typeBtn, !isIncome && styles.typeBtnActiveExpense, !isIncome && colorScheme === 'dark' && { backgroundColor: '#dc2626' }]}
-                   onPress={() => setType('EXPENSE')}
+                   onPress={() => {
+                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                        setType('EXPENSE');
+                   }}
                 >
                   <Text style={[styles.typeBtnText, !isIncome && styles.typeBtnTextActive]}>{t('home.expense')}</Text>
                 </TouchableOpacity>

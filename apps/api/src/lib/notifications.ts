@@ -13,66 +13,92 @@ export interface PushNotificationPayload {
 /**
  * Sends a push notification using Expo Push API and optionally saves to DB history.
  */
-export async function sendPushNotification(payload: PushNotificationPayload) {
-  // 1. Save to DB if userId is provided
-  if (payload.userId) {
-    try {
-      await prisma.notification.create({
-        data: {
-          userId: payload.userId,
-          title: payload.title,
-          body: payload.body,
-          data: payload.data ? (payload.data as any) : undefined,
-        },
-      });
-    } catch (e) {
-      console.error("Failed to save notification to DB:", e);
-    }
+export async function sendPushNotification(
+  userId: string,
+  title: string,
+  body: string,
+  data?: Record<string, any>
+) {
+  // 1. Save to DB history
+  try {
+    await prisma.notification.create({
+      data: {
+        userId,
+        title,
+        body,
+        data: data ? (data as any) : undefined,
+      },
+    });
+  } catch (e) {
+    console.error("Failed to save notification to DB:", e);
   }
 
-  const messages = Array.isArray(payload.to) ? payload.to : [payload.to];
+  // 2. Resolve Push Token
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { pushToken: true },
+  });
 
-  // Filter out invalid tokens (basic check)
+  const token = user?.pushToken;
+
+  if (!token || !token.startsWith("ExponentPushToken")) {
+    console.log(`No valid Expo push token for user ${userId}. skipping push.`);
+    return;
+  }
+
+  // 3. Send via Expo
+  try {
+    const response = await fetch("https://exp.host/--/api/v2/push/send", {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Accept-encoding": "gzip, deflate",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        to: token,
+        title,
+        body,
+        data,
+        sound: "default",
+      }),
+    });
+
+    const result = await response.json();
+    console.log("Expo push notification result:", JSON.stringify(result));
+  } catch (error) {
+    console.error("Error sending push notification:", error);
+  }
+}
+
+/**
+ * Legacy support or multi-token sending
+ */
+export async function sendRawPushNotification(
+  payload: PushNotificationPayload
+) {
+  const messages = Array.isArray(payload.to) ? payload.to : [payload.to];
   const validTokens = messages.filter(
     (token) => token && token.startsWith("ExponentPushToken")
   );
 
-  if (validTokens.length === 0) {
-    console.log("No valid Expo push tokens found.");
-    return;
-  }
+  if (validTokens.length === 0) return;
 
-  const chunks = [];
-  const chunkSize = 100; // Expo limit
-  for (let i = 0; i < validTokens.length; i += chunkSize) {
-    chunks.push(validTokens.slice(i, i + chunkSize));
-  }
-
-  for (const chunk of chunks) {
+  for (const token of validTokens) {
     try {
-      const response = await fetch("https://exp.host/--/api/v2/push/send", {
+      await fetch("https://exp.host/--/api/v2/push/send", {
         method: "POST",
-        headers: {
-          Accept: "application/json",
-          "Accept-encoding": "gzip, deflate",
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(
-          chunk.map((token) => ({
-            to: token,
-            title: payload.title,
-            body: payload.body,
-            data: payload.data,
-            sound: payload.sound || "default",
-            badge: payload.badge,
-          }))
-        ),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          to: token,
+          title: payload.title,
+          body: payload.body,
+          data: payload.data,
+          sound: payload.sound || "default",
+        }),
       });
-
-      const result = await response.json();
-      console.log("Expo push notification result:", JSON.stringify(result));
-    } catch (error) {
-      console.error("Error sending push notification chunk:", error);
+    } catch (e) {
+      console.error(e);
     }
   }
 }

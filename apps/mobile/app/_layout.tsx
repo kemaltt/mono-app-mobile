@@ -82,6 +82,8 @@ import * as Notifications from 'expo-notifications';
 import { registerForPushNotificationsAsync, savePushTokenToServer } from '../utils/notifications';
 import { API_URL } from '../constants/Config';
 
+import * as Haptics from 'expo-haptics';
+
 function RootLayoutContent() {
   const { colorScheme } = useTheme();
   const { isLoading, user, token, refreshUser } = useAuth();
@@ -106,6 +108,10 @@ function RootLayoutContent() {
       // Listen for foreground notifications to refresh badge count
       const subscription = Notifications.addNotificationReceivedListener(notification => {
         console.log('Notification received in foreground:', notification);
+        
+        // Add haptic feedback for physical feel
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        
         refreshUser();
       });
 
@@ -113,7 +119,8 @@ function RootLayoutContent() {
         subscription.remove();
       };
     }
-  }, [user?.id, token, refreshUser]); // Use user.id to avoid running on every user object change
+  }, [user?.id, token, refreshUser]);
+ // Use user.id to avoid running on every user object change
 
 
   return useMemo(() => (

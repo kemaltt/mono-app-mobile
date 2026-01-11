@@ -1,4 +1,5 @@
 import prisma from "./prisma";
+import { sendPushNotification } from "./notifications";
 
 export const addXP = async (
   userId: string,
@@ -13,8 +14,18 @@ export const addXP = async (
 
     if (!dbUser) return { xp: 0, level: 1, unlockedAchievements: [] }; // Changed 'user' to 'dbUser'
 
-    const newXP = dbUser.xp + amount; // Changed 'user' to 'dbUser'
+    const newXP = dbUser.xp + amount;
     const newLevel = Math.floor(newXP / 100) + 1;
+
+    // Trigger Level Up Notification
+    if (newLevel > dbUser.level) {
+      sendPushNotification(
+        userId,
+        "Seviye Atladın! 🚀",
+        `Tebrikler! ${newLevel}. seviyeye ulaştın. Harika gidiyorsun!`,
+        { type: "level_up", level: newLevel }
+      ).catch(console.error);
+    }
 
     await prisma.user.update({
       where: { id: userId },
@@ -94,6 +105,14 @@ export const unlockAchievement = async (userId: string, key: string) => {
         },
         include: { achievement: true },
       });
+
+      // Send Achievement Notification
+      sendPushNotification(
+        userId,
+        "Yeni Başarı Kilidi Açıldı! 🏆",
+        `"${unlocked.achievement.name}" başarısını kazandın!`,
+        { type: "achievement", key: key }
+      ).catch(console.error);
 
       // Award extra XP for achievement without re-checking (recursion fix)
       await addXP(userId, achievement.xpReward, false);
