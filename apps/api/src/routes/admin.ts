@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { jwt } from "hono/jwt";
 import prisma from "../lib/prisma";
-import { adminGuard } from "../middleware/admin-check";
+import { adminGuard, superAdminGuard } from "../middleware/admin-check";
 
 const admin = new Hono();
 
@@ -99,7 +99,7 @@ admin.get("/users/:id", async (c) => {
 });
 
 // Update user details
-admin.patch("/users/:id", async (c) => {
+admin.patch("/users/:id", superAdminGuard, async (c) => {
   const id = c.req.param("id");
   const body = await c.req.json();
 

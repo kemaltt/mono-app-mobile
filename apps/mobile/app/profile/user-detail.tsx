@@ -15,13 +15,14 @@ export default function UserDetailScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const { id } = useLocalSearchParams();
-  const { token } = useAuth();
+  const { token, user: authUser } = useAuth();
   const { colorScheme } = useTheme();
   const colors = Colors[colorScheme];
 
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
   const [user, setUser] = useState(null);
+  const isSuperAdmin = authUser?.role === 'SUPER_ADMIN';
   
   // Edit states
   const [licenseTier, setLicenseTier] = useState('');
@@ -139,11 +140,13 @@ export default function UserDetailScreen() {
                     {['TRIAL', 'PRO', 'ULTIMATE'].map(t => (
                         <TouchableOpacity 
                             key={t} 
-                            onPress={() => setLicenseTier(t)}
+                            onPress={() => isSuperAdmin && setLicenseTier(t)}
+                            disabled={!isSuperAdmin}
                             style={[
                                 styles.pickerItem, 
                                 { borderColor: colorScheme === 'dark' ? '#334155' : '#E5E7EB' },
-                                licenseTier === t && { backgroundColor: '#586EEF', borderColor: '#586EEF' }
+                                licenseTier === t && { backgroundColor: '#586EEF', borderColor: '#586EEF' },
+                                !isSuperAdmin && { opacity: 0.6 }
                             ]}
                         >
                             <Text style={[styles.pickerText, { color: colors.text }, licenseTier === t && { color: 'white' }]}>{t}</Text>
@@ -159,11 +162,13 @@ export default function UserDetailScreen() {
                     {['ACTIVE', 'CANCELED_REQUEST', 'CANCELLED'].map(s => (
                         <TouchableOpacity 
                             key={s} 
-                            onPress={() => setStatus(s)}
+                            onPress={() => isSuperAdmin && setStatus(s)}
+                            disabled={!isSuperAdmin}
                             style={[
                                 styles.pickerItem, 
                                 { borderColor: colorScheme === 'dark' ? '#334155' : '#E5E7EB' },
-                                status === s && { backgroundColor: '#586EEF', borderColor: '#586EEF' }
+                                status === s && { backgroundColor: '#586EEF', borderColor: '#586EEF' },
+                                !isSuperAdmin && { opacity: 0.6 }
                             ]}
                         >
                             <Text style={[styles.pickerText, { fontSize: 10, color: colors.text }, status === s && { color: 'white' }]}>{s.replace('_', ' ')}</Text>
@@ -176,14 +181,16 @@ export default function UserDetailScreen() {
             <View style={styles.inputGroup}>
                 <Text style={styles.label}>{t('admin.role')}</Text>
                 <View style={styles.pickerRow}>
-                    {['USER', 'ADMIN'].map(r => (
+                    {['USER', 'ADMIN', 'SUPER_ADMIN'].map(r => (
                         <TouchableOpacity 
                             key={r} 
-                            onPress={() => setRole(r)}
+                            onPress={() => isSuperAdmin && setRole(r)}
+                            disabled={!isSuperAdmin}
                             style={[
                                 styles.pickerItem, 
                                 { borderColor: colorScheme === 'dark' ? '#334155' : '#E5E7EB' },
-                                role === r && { backgroundColor: '#EF4444', borderColor: '#EF4444' }
+                                role === r && { backgroundColor: r === 'SUPER_ADMIN' ? '#8B5CF6' : '#EF4444', borderColor: r === 'SUPER_ADMIN' ? '#8B5CF6' : '#EF4444' },
+                                !isSuperAdmin && { opacity: 0.6 }
                             ]}
                         >
                             <Text style={[styles.pickerText, { color: colors.text }, role === r && { color: 'white' }]}>{r}</Text>
@@ -196,10 +203,11 @@ export default function UserDetailScreen() {
             <View style={styles.inputGroup}>
                 <Text style={styles.label}>{t('admin.aiUsageToday')}</Text>
                 <TextInput 
-                    style={[styles.input, { backgroundColor: colorScheme === 'dark' ? '#1E293B' : '#F9FAFB', borderColor: colorScheme === 'dark' ? '#334155' : '#E5E7EB', color: colors.text }]}
+                    style={[styles.input, { backgroundColor: colorScheme === 'dark' ? '#1E293B' : '#F9FAFB', borderColor: colorScheme === 'dark' ? '#334155' : '#E5E7EB', color: colors.text }, !isSuperAdmin && { opacity: 0.6 }]}
                     value={aiUsageCount}
                     onChangeText={setAiUsageCount}
                     keyboardType="number-pad"
+                    editable={isSuperAdmin}
                 />
             </View>
 
@@ -211,6 +219,7 @@ export default function UserDetailScreen() {
                     onValueChange={setIsVerified}
                     trackColor={{ false: "#767577", true: "#81b0ff" }}
                     thumbColor={isVerified ? "#586EEF" : "#f4f3f4"}
+                    disabled={!isSuperAdmin}
                 />
             </View>
 
@@ -219,12 +228,13 @@ export default function UserDetailScreen() {
                 <View style={styles.inputGroup}>
                     <Text style={styles.label}>{t('admin.trialExpiresAt')}</Text>
                     <TouchableOpacity 
-                        style={[styles.input, { backgroundColor: colorScheme === 'dark' ? '#1E293B' : '#F9FAFB', borderColor: colorScheme === 'dark' ? '#334155' : '#E5E7EB', justifyContent: 'center' }]}
-                        onPress={() => setShowDatePicker(true)}
+                        style={[styles.input, { backgroundColor: colorScheme === 'dark' ? '#1E293B' : '#F9FAFB', borderColor: colorScheme === 'dark' ? '#334155' : '#E5E7EB', justifyContent: 'center' }, !isSuperAdmin && { opacity: 0.6 }]}
+                        onPress={() => isSuperAdmin && setShowDatePicker(true)}
+                        disabled={!isSuperAdmin}
                     >
                         <Text style={{ color: colors.text }}>{trialEndsAt.toLocaleDateString()} {trialEndsAt.toLocaleTimeString()}</Text>
                     </TouchableOpacity>
-                    {showDatePicker && (
+                    {showDatePicker && isSuperAdmin && (
                         <DateTimePicker
                             value={trialEndsAt}
                             mode="date"
@@ -238,13 +248,15 @@ export default function UserDetailScreen() {
                 </View>
             )}
 
-            <TouchableOpacity 
-                style={[styles.saveButton, updating && { opacity: 0.7 }]}
-                onPress={handleSave}
-                disabled={updating}
-            >
-                {updating ? <ActivityIndicator color="white" /> : <Text style={styles.saveButtonText}>{t('admin.applyChanges')}</Text>}
-            </TouchableOpacity>
+            {isSuperAdmin && (
+              <TouchableOpacity 
+                  style={[styles.saveButton, updating && { opacity: 0.7 }]}
+                  onPress={handleSave}
+                  disabled={updating}
+              >
+                  {updating ? <ActivityIndicator color="white" /> : <Text style={styles.saveButtonText}>{t('admin.applyChanges')}</Text>}
+              </TouchableOpacity>
+            )}
         </View>
       </ScrollView>
     </View>

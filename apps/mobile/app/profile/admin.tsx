@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator, FlatList, Dimensions, Animated, Modal, Pressable } from 'react-native';
-import { useRouter, Stack } from 'expo-router';
+import { useRouter, Stack, useFocusEffect } from 'expo-router';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
@@ -63,9 +63,11 @@ export default function AdminScreen() {
     }
   }, [token, filterLicense]);
 
-  useEffect(() => {
-    fetchData();
-  }, [filterLicense]);
+  useFocusEffect(
+    useCallback(() => {
+      fetchData();
+    }, [fetchData])
+  );
 
   const toggleFilter = (license) => {
     setFilterLicense(prev => prev === license ? null : license);
@@ -188,7 +190,7 @@ export default function AdminScreen() {
             key={item.id} 
             style={[styles.userItem, { backgroundColor: colorScheme === 'dark' ? '#1E293B' : '#FFFFFF', borderColor: colorScheme === 'dark' ? '#334155' : '#F3F4F6' }]}
             onPress={() => router.push({ pathname: '/profile/user-detail', params: { id: item.id } })}
-            onLongPress={() => showUserOptions(item)}
+            onLongPress={() => authUser?.role === 'SUPER_ADMIN' && showUserOptions(item)}
           >
             <View style={styles.userInfo}>
               <Text style={[styles.userName, { color: colors.text }]}>{item.firstName} {item.lastName}</Text>
