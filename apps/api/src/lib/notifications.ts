@@ -48,6 +48,12 @@ export async function sendPushNotification(
 
   // 3. Send via Expo
   try {
+    // Basic mapping of our data types to Expo categories (for rich buttons)
+    let categoryId = undefined;
+    if (data?.type === "budget_threshold") categoryId = "budget";
+    if (data?.type === "large_transaction") categoryId = "security";
+    if (data?.type === "weekly_summary") categoryId = "summary";
+
     const response = await fetch("https://exp.host/--/api/v2/push/send", {
       method: "POST",
       headers: {
@@ -61,6 +67,7 @@ export async function sendPushNotification(
         body,
         data,
         sound: "default",
+        categoryId, // This enables the buttons we defined in Mobile app
       }),
     });
 

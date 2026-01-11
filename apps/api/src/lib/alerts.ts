@@ -7,6 +7,14 @@ import { sendPushNotification } from "./notifications";
  */
 export async function checkBudgetThresholds(userId: string, category: string) {
   try {
+    // 0. Check User Preferences
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { notificationSettings: true },
+    });
+    const settings = (user?.notificationSettings as any) || {};
+    if (settings.budget === false) return;
+
     // 1. Find active budget for this category
     const budget = await prisma.budget.findFirst({
       where: {
@@ -17,7 +25,7 @@ export async function checkBudgetThresholds(userId: string, category: string) {
 
     if (!budget) return;
 
-    // 2. Calculate total spending for this category in the current month
+    // ... (rest of the spending calculation remains same)
     const now = new Date();
     const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
 
@@ -45,27 +53,13 @@ export async function checkBudgetThresholds(userId: string, category: string) {
 
     if (!threshold) return;
 
-    // 4. De-duplication: Check if we already sent THIS threshold alert for THIS budget in THIS month
-    const existingAlert = await prisma.notification.findFirst({
-      where: {
-        userId,
-        createdAt: { gte: firstDay },
-        data: {
-          path: ["type"],
-          equals: "budget_threshold",
-        } as any, // Json filter trick
-      },
-      // Note: prisma Json filters are a bit tricky, simpler approach:
-      // We'll just check if a notification with specific title part exists
-    });
-
-    // Let's refine the de-duplication logic to be more reliable
+    // 4. De-duplication check...
     const existingNotifications = await prisma.notification.findMany({
       where: {
         userId,
         createdAt: { gte: firstDay },
       },
-      take: 20, // Check recent ones
+      take: 20,
     });
 
     const alreadySent = existingNotifications.some((n) => {
@@ -104,15 +98,27 @@ export async function checkLargeTransaction(
   amount: number,
   category: string
 ) {
-  const LARGE_THRESHOLD = 500; // Hardcoded prefix for now, could be dynamic
-
-  if (amount >= LARGE_THRESHOLD) {
-    const title = "Yüksek Tutarlı Harcama! 🛡️";
-    const body = `${amount} tutarında bir ${category} harcaması kaydedildi. Eğer bu sana ait değilse kontrol etmeni öneririz.`;
-
-    await sendPushNotification(userId, title, body, {
-      type: "large_transaction",
-      amount,
+  try {
+    // 0. Check User Preferences
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { notificationSettings: true },
     });
+    const settings = (user?.notificationSettings as any) || {};
+    if (settings.security === false) return;
+
+    const LARGE_THRESHOLD = 500;
+
+    if (amount >= LARGE_THRESHOLD) {
+      const title = "Yüksek Tutarlı Harcama! 🛡️";
+      const body = `${amount} tutarında bir ${category} harcaması kaydedildi. Eğer bu sana ait değilse kontrol etmeni öneririz.`;
+
+      await sendPushNotification(userId, title, body, {
+        type: "large_transaction",
+        amount,
+      });
+    }
+  } catch (e) {
+    console.error(e);
   }
 }

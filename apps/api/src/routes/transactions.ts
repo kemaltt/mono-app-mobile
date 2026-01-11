@@ -270,11 +270,68 @@ app.get("/dashboard", async (c) => {
       _sum: { amount: true },
     });
 
+    // --- PREMIUM WIDGET DATA ---
+
+    // 1. Weekly Chart Data (Last 7 days)
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    const dailyExpenses = await prisma.transaction.groupBy({
+      by: ["date"],
+      where: {
+        userId: user.id,
+        type: "EXPENSE",
+        date: { gte: sevenDaysAgo },
+      },
+      _sum: { amount: true },
+    });
+
+    const weeklyChart = dailyExpenses.map((item) => ({
+      day: new Date(item.date).toLocaleDateString("tr-TR", {
+        weekday: "short",
+      }),
+      amount: Number(item._sum.amount || 0),
+    }));
+
+    // 2. Budget Summary (Top 3 active budgets)
+    const budgets = await prisma.budget.findMany({
+      where: { userId: user.id },
+      take: 3,
+    });
+
+    const budgetSummary = await Promise.all(
+      budgets.map(async (b) => {
+        const spentAgg = await prisma.transaction.aggregate({
+          where: {
+            userId: user.id,
+            category: b.category,
+            type: "EXPENSE",
+            date: { gte: firstDay },
+          },
+          _sum: { amount: true },
+        });
+        return {
+          category: b.category,
+          limit: Number(b.amount),
+          spent: Number(spentAgg._sum.amount || 0),
+          percent: Math.min(
+            100,
+            Math.round(
+              (Number(spentAgg._sum.amount || 0) / Number(b.amount)) * 100
+            )
+          ),
+        };
+      })
+    );
+
+    // --- END PREMIUM WIDGET DATA ---
+
     return c.json({
       balance: wallet.balance,
       income: incomeAgg._sum.amount || 0,
       expense: expenseAgg._sum.amount || 0,
       currency: wallet.currency,
+      weeklyChart,
+      budgetSummary,
     });
   } catch (error) {
     console.error(error);

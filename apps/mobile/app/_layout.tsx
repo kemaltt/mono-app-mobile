@@ -84,10 +84,58 @@ import { API_URL } from '../constants/Config';
 
 import * as Haptics from 'expo-haptics';
 
+import { useRouter } from 'expo-router';
+
 function RootLayoutContent() {
   const { colorScheme } = useTheme();
   const { isLoading, user, token, refreshUser } = useAuth();
+  const router = useRouter();
   const lastRegisteredToken = React.useRef<string | null>(null);
+
+  useEffect(() => {
+    // 1. Define notification categories for Interactive Buttons
+    const setupCategories = async () => {
+      await Notifications.setNotificationCategoryAsync('budget', [
+        { buttonTitle: 'Detayları Gör 📊', identifier: 'view_details', options: { opensAppToForeground: true } },
+        { buttonTitle: 'Kapat', identifier: 'dismiss', options: { isDestructive: true } },
+      ]);
+      
+      await Notifications.setNotificationCategoryAsync('security', [
+        { buttonTitle: 'Harcamayı İncele 🛡️', identifier: 'view_transaction', options: { opensAppToForeground: true } },
+        { buttonTitle: 'Güvende', identifier: 'dismiss' },
+      ]);
+
+      await Notifications.setNotificationCategoryAsync('summary', [
+        { buttonTitle: 'Özeti Gör 📈', identifier: 'view_summary', options: { opensAppToForeground: true } },
+      ]);
+      
+      console.log('Notification categories initialized');
+    };
+
+    setupCategories();
+
+    // 2. Listen for interactions (Button clicks or Notification taps)
+    const responseSubscription = Notifications.addNotificationResponseReceivedListener(response => {
+      const { actionIdentifier, notification } = response;
+      const data = notification.request.content.data;
+      
+      console.log('Notification action received:', actionIdentifier, data);
+
+      if (actionIdentifier === 'view_details' || actionIdentifier === 'view_summary') {
+        router.push('/statistics');
+      } else if (actionIdentifier === 'view_transaction') {
+        if (data.transactionId) {
+          router.push(`/transaction/${data.transactionId}`);
+        } else {
+          router.push('/(tabs)/home');
+        }
+      }
+    });
+
+    return () => {
+      responseSubscription.remove();
+    };
+  }, [router]);
 
   useEffect(() => {
     if (user && token) {

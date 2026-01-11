@@ -96,6 +96,14 @@ export default function NotificationsScreen() {
           <TouchableOpacity onPress={() => router.back()} style={{ marginLeft: 15 }}>
             <Ionicons name="chevron-back" size={28} color={colors.text} />
           </TouchableOpacity>
+        ),
+        headerRight: () => (
+          <TouchableOpacity 
+            onPress={() => router.push('/profile/notification-settings')} 
+            style={{ marginRight: 15 }}
+          >
+            <Ionicons name="settings-outline" size={24} color={colors.text} />
+          </TouchableOpacity>
         )
       }} />
 

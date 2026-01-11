@@ -7,6 +7,14 @@ import { format } from "date-fns";
  */
 export async function sendWeeklySummary(userId: string) {
   try {
+    // 0. Check User Preferences
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { notificationSettings: true },
+    });
+    const settings = (user?.notificationSettings as any) || {};
+    if (settings.weekly === false) return;
+
     const now = new Date();
     const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
 

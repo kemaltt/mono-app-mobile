@@ -47,6 +47,7 @@ model User {
 
   // Notifications & Activity
   pushToken       String?
+  notificationSettings Json?   @default("{\"budget\": true, \"security\": true, \"weekly\": true, \"gamification\": true}")
   lastLoginAt     DateTime   @default(now())
   lastTransactionAt DateTime @default(now())
   

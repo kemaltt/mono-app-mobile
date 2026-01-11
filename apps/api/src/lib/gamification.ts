@@ -8,8 +8,8 @@ export const addXP = async (
 ) => {
   try {
     const dbUser: any = await prisma.user.findUnique({
-      where: { id: userId }, // Changed from user.id to userId to maintain syntactic correctness
-      select: { xp: true, level: true }, // Kept original select to maintain logical correctness for XP calculation
+      where: { id: userId },
+      select: { xp: true, level: true, notificationSettings: true },
     });
 
     if (!dbUser) return { xp: 0, level: 1, unlockedAchievements: [] }; // Changed 'user' to 'dbUser'
@@ -19,12 +19,15 @@ export const addXP = async (
 
     // Trigger Level Up Notification
     if (newLevel > dbUser.level) {
-      sendPushNotification(
-        userId,
-        "Seviye Atladın! 🚀",
-        `Tebrikler! ${newLevel}. seviyeye ulaştın. Harika gidiyorsun!`,
-        { type: "level_up", level: newLevel }
-      ).catch(console.error);
+      const settings = (dbUser.notificationSettings as any) || {};
+      if (settings.gamification !== false) {
+        sendPushNotification(
+          userId,
+          "Seviye Atladın! 🚀",
+          `Tebrikler! ${newLevel}. seviyeye ulaştın. Harika gidiyorsun!`,
+          { type: "level_up", level: newLevel }
+        ).catch(console.error);
+      }
     }
 
     await prisma.user.update({
@@ -107,12 +110,20 @@ export const unlockAchievement = async (userId: string, key: string) => {
       });
 
       // Send Achievement Notification
-      sendPushNotification(
-        userId,
-        "Yeni Başarı Kilidi Açıldı! 🏆",
-        `"${unlocked.achievement.name}" başarısını kazandın!`,
-        { type: "achievement", key: key }
-      ).catch(console.error);
+      const userSettingsFetch = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { notificationSettings: true },
+      });
+      const settings = (userSettingsFetch?.notificationSettings as any) || {};
+
+      if (settings.gamification !== false) {
+        sendPushNotification(
+          userId,
+          "Yeni Başarı Kilidi Açıldı! 🏆",
+          `"${unlocked.achievement.name}" başarısını kazandın!`,
+          { type: "achievement", key: key }
+        ).catch(console.error);
+      }
 
       // Award extra XP for achievement without re-checking (recursion fix)
       await addXP(userId, achievement.xpReward, false);

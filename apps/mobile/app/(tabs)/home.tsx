@@ -13,6 +13,7 @@ import { Colors } from '../../constants/theme';
 import { API_URL } from '../../constants/Config';
 import Toast from 'react-native-toast-message';
 import AiLimitModal from '../../components/AiLimitModal';
+import { PremiumWidgets } from '../../components/PremiumWidgets';
 import Reanimated, { 
   useSharedValue, 
   useAnimatedStyle, 
@@ -286,6 +287,14 @@ export default function HomeScreen() {
                 </View>
             </View>
         </View>
+
+        {/* Premium Widgets (NEW) */}
+        {!loading && dashboard && (
+            <PremiumWidgets 
+                weeklyChart={dashboard.weeklyChart} 
+                budgetSummary={dashboard.budgetSummary} 
+            />
+        )}
 
         {/* In-App Widget Section (Premium Look) */}
         <View style={styles.widgetRow}>

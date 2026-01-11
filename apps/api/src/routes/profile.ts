@@ -362,4 +362,60 @@ profile.post(
   }
 );
 
+// NOTIFICATION SETTINGS
+const notificationSettingsSchema = z.object({
+  budget: z.boolean().optional(),
+  security: z.boolean().optional(),
+  weekly: z.boolean().optional(),
+  gamification: z.boolean().optional(),
+});
+
+profile.get("/notification-settings", async (c) => {
+  const payload = c.get("jwtPayload");
+  const user = await prisma.user.findUnique({
+    where: { id: payload.id },
+    select: { notificationSettings: true },
+  });
+
+  // Default if null
+  const settings = user?.notificationSettings || {
+    budget: true,
+    security: true,
+    weekly: true,
+    gamification: true,
+  };
+
+  return c.json(settings);
+});
+
+profile.patch(
+  "/notification-settings",
+  zValidator("json", notificationSettingsSchema),
+  async (c) => {
+    const payload = c.get("jwtPayload");
+    const body = c.req.valid("json");
+
+    const user = await prisma.user.findUnique({
+      where: { id: payload.id },
+      select: { notificationSettings: true },
+    });
+
+    const currentSettings = (user?.notificationSettings as any) || {
+      budget: true,
+      security: true,
+      weekly: true,
+      gamification: true,
+    };
+
+    const newSettings = { ...currentSettings, ...body };
+
+    await prisma.user.update({
+      where: { id: payload.id },
+      data: { notificationSettings: newSettings },
+    });
+
+    return c.json({ message: "Settings updated", settings: newSettings });
+  }
+);
+
 export default profile;

@@ -203,7 +203,7 @@ export default function SettingsScreen() {
   };
 
   const settingsItems = [
-    { icon: 'notifications-outline', label: t('profile.notifications'), onPress: () => {} },
+    { icon: 'notifications-outline', label: t('profile.notifications'), onPress: () => router.push('/profile/notification-settings') },
     { icon: 'contrast-outline', label: t('profile.design'), onPress: showDesignPicker },
     { icon: 'language-outline', label: t('profile.language'), onPress: showLanguagePicker },
     ...(isBiometricSupported ? [{ 
