@@ -10,7 +10,9 @@
     "edit": "Bearbeiten",
     "error": "Fehler",
     "success": "Erfolgreich",
-    "clickToOpen": "Klicken zum Öffnen"
+    "clickToOpen": "Klicken zum Öffnen",
+    "confirm": "Bestätigen",
+    "confirmPassword": "Passwort bestätigen"
   },
   "onboarding": {
     "title1": "Intelligenter Ausgeben",

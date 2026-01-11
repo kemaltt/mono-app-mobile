@@ -10,7 +10,9 @@
     "edit": "Edit",
     "error": "Error",
     "success": "Success",
-    "clickToOpen": "Click to open"
+    "clickToOpen": "Click to open",
+    "confirm": "Confirm",
+    "confirmPassword": "Confirm Password"
   },
   "onboarding": {
     "title1": "Spend Smarter",

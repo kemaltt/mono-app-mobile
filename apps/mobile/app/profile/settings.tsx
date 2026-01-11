@@ -1,14 +1,17 @@
 // @ts-nocheck
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert, Modal, Pressable, Animated, Switch } from 'react-native';
+import { View, Text, TextInput, StyleSheet, TouchableOpacity, ScrollView, Alert, Modal, Pressable, Animated, Switch, ActivityIndicator } from 'react-native';
 import { useRouter, Stack } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useState, useRef, useEffect } from 'react';
+import { useAuth } from '../../context/auth';
 import { useTheme } from '../../context/theme';
 import { Colors } from '../../constants/theme';
 import * as LocalAuthentication from 'expo-local-authentication';
 import * as SecureStore from 'expo-secure-store';
+import Toast from 'react-native-toast-message';
+import { API_URL } from '../../constants/Config';
 
 export default function SettingsScreen() {
   const { t, i18n } = useTranslation();
@@ -22,6 +25,10 @@ export default function SettingsScreen() {
   const [isBiometricEnabled, setIsBiometricEnabled] = useState(false);
   const [isBiometricSupported, setIsBiometricSupported] = useState(false);
   const [biometricLabel, setBiometricLabel] = useState('FaceID');
+  const [isPassModalVisible, setIsPassModalVisible] = useState(false);
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [isVerifying, setIsVerifying] = useState(false);
+  const { user: authUser } = useAuth();
 
   useEffect(() => {
     checkBiometricStatus();
@@ -49,16 +56,60 @@ export default function SettingsScreen() {
     if (value) {
         const isEnrolled = await LocalAuthentication.isEnrolledAsync();
         if (!isEnrolled) {
-            Alert.alert(t('common.error'), "No biometric records found. Please set up FaceID/TouchID on your device first.");
-            setIsBiometricEnabled(false);
-            return;
+            Toast.show({
+                type: 'info',
+                text1: "Biometrics not enrolled",
+                text2: "Please enroll FaceID/TouchID in your device settings to use this feature.",
+                visibilityTime: 4000
+            });
         }
-        Alert.alert(t('common.info'), "Please log out and log in again to enable biometric authentication.");
+        setIsPassModalVisible(true);
     } else {
         await SecureStore.deleteItemAsync('user_email');
         await SecureStore.deleteItemAsync('user_password');
         setIsBiometricEnabled(false);
     }
+  };
+
+  const handleConfirmPassword = async () => {
+      if (!confirmPassword) return;
+      
+      setIsVerifying(true);
+      try {
+          // Verify password with backend by attempting a login
+          const response = await fetch(`${API_URL}/auth/login`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                  email: authUser?.email,
+                  password: confirmPassword
+              })
+          });
+
+          const data = await response.json();
+
+          if (response.ok) {
+              if (authUser?.email) {
+                  await SecureStore.setItemAsync('user_email', authUser.email);
+                  await SecureStore.setItemAsync('user_password', confirmPassword);
+                  setIsBiometricEnabled(true);
+                  setIsPassModalVisible(false);
+                  setConfirmPassword('');
+                  Toast.show({
+                      type: 'success',
+                      text1: t('common.success'),
+                      text2: `${biometricLabel} enabled successfully!`
+                  });
+              }
+          } else {
+              Alert.alert(t('common.error'), data.error || "Invalid password");
+          }
+      } catch (e) {
+          console.error(e);
+          Alert.alert("Error", "Connection failed. Please try again.");
+      } finally {
+          setIsVerifying(false);
+      }
   };
 
   const changeLanguage = async (lng: string) => {
@@ -374,6 +425,57 @@ export default function SettingsScreen() {
           </Animated.View>
         </Pressable>
       </Modal>
+
+      <Modal
+        visible={isPassModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setIsPassModalVisible(false)}
+      >
+        <View style={styles.passwordModalOverlay}>
+            <View style={[styles.passwordModal, { backgroundColor: colorScheme === 'dark' ? '#1E293B' : '#FFFFFF' }]}>
+                <Text style={[styles.passwordTitle, { color: colors.text }]}>{t('common.confirmPassword')}</Text>
+                <Text style={[styles.passwordSub, { color: colors.subtext }]}>
+                    Please enter your password to enable {biometricLabel}
+                </Text>
+                <TextInput
+                    style={[styles.passwordInput, { 
+                        backgroundColor: colorScheme === 'dark' ? '#111827' : '#F9FAFB',
+                        color: colors.text,
+                        borderColor: colorScheme === 'dark' ? '#334155' : '#E5E7EB'
+                    }]}
+                    placeholder={t('auth.password')}
+                    placeholderTextColor="#9CA3AF"
+                    secureTextEntry
+                    value={confirmPassword}
+                    onChangeText={setConfirmPassword}
+                    autoFocus
+                />
+                <View style={styles.passwordButtons}>
+                    <TouchableOpacity 
+                        style={[styles.passBtn, styles.passBtnCancel]} 
+                        onPress={() => {
+                            setIsPassModalVisible(false);
+                            setConfirmPassword('');
+                        }}
+                    >
+                        <Text style={styles.passBtnCancelText}>{t('common.cancel')}</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity 
+                        style={[styles.passBtn, styles.passBtnConfirm, isVerifying && { opacity: 0.7 }]} 
+                        onPress={handleConfirmPassword}
+                        disabled={isVerifying}
+                    >
+                        {isVerifying ? (
+                            <ActivityIndicator color="#FFFFFF" size="small" />
+                        ) : (
+                            <Text style={styles.passBtnConfirmText}>{t('common.confirm')}</Text>
+                        )}
+                    </TouchableOpacity>
+                </View>
+            </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -510,5 +612,67 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '700',
     color: '#6B7280',
+  },
+  passwordModalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  passwordModal: {
+      width: '100%',
+      padding: 25,
+      borderRadius: 24,
+      elevation: 5,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 10 },
+      shadowOpacity: 0.1,
+      shadowRadius: 20,
+  },
+  passwordTitle: {
+      fontSize: 20,
+      fontWeight: 'bold',
+      marginBottom: 10,
+      textAlign: 'center',
+  },
+  passwordSub: {
+      fontSize: 14,
+      textAlign: 'center',
+      marginBottom: 20,
+      lineHeight: 20,
+  },
+  passwordInput: {
+      height: 56,
+      borderRadius: 16,
+      paddingHorizontal: 16,
+      fontSize: 16,
+      borderWidth: 1,
+      marginBottom: 20,
+  },
+  passwordButtons: {
+      flexDirection: 'row',
+      gap: 12,
+  },
+  passBtn: {
+      flex: 1,
+      height: 50,
+      borderRadius: 12,
+      justifyContent: 'center',
+      alignItems: 'center',
+  },
+  passBtnCancel: {
+      backgroundColor: '#F3F4F6',
+  },
+  passBtnConfirm: {
+      backgroundColor: '#586EEF',
+  },
+  passBtnCancelText: {
+      color: '#4B5563',
+      fontWeight: '600',
+  },
+  passBtnConfirmText: {
+      color: '#FFFFFF',
+      fontWeight: '600',
   }
 });

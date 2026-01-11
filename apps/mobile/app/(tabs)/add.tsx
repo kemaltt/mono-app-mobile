@@ -37,7 +37,7 @@ export default function AddTransactionScreen() {
   const { colorScheme } = useTheme();
   const colors = Colors[colorScheme];
   const router = useRouter();
-  const { token, user, updateUser } = useAuth();
+  const { token, user: authUser, updateUser } = useAuth();
   const { showXP, showAchievement, showLevelUp } = useGamification();
   
   const [amount, setAmount] = useState('');
@@ -241,14 +241,16 @@ export default function AddTransactionScreen() {
 
         // Show Gamification Rewards
         if (data.gainedXP) showXP(data.gainedXP);
-        if (data.level && data.level > user.level) showLevelUp(data.level);
+        if (data.level && authUser?.level !== undefined && data.level > authUser.level) {
+            showLevelUp(data.level);
+        }
         if (data.unlockedAchievements && data.unlockedAchievements.length > 0) {
             data.unlockedAchievements.forEach((ach: any) => showAchievement(ach));
         }
 
         // Update local user state for XP bar
         if (data.xp !== undefined && data.level !== undefined) {
-            updateUser({ ...user, xp: data.xp, level: data.level });
+            updateUser({ ...authUser, xp: data.xp, level: data.level });
         }
 
         setTimeout(() => {

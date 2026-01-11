@@ -26,6 +26,7 @@ interface GamificationContextType {
 const GamificationContext = createContext<GamificationContextType>({
   showXP: () => {},
   showAchievement: () => {},
+  showLevelUp: () => {},
 });
 
 export const useGamification = () => useContext(GamificationContext);

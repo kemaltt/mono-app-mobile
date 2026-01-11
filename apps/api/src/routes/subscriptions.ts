@@ -1,7 +1,30 @@
 import { Hono } from "hono";
+import { verify } from "hono/jwt";
 import prisma from "../lib/prisma";
 
-const app = new Hono<{ Variables: { user: any } }>();
+const JWT_SECRET = process.env.JWT_SECRET || "supersecretkeyshouldbehidden";
+
+type Variables = {
+  user: {
+    id: string;
+    email: string;
+  };
+};
+
+const app = new Hono<{ Variables: Variables }>();
+
+app.use("/*", async (c, next) => {
+  const authHeader = c.req.header("Authorization");
+  if (!authHeader) return c.json({ error: "Unauthorized" }, 401);
+  const token = authHeader.split(" ")[1];
+  try {
+    const payload = await verify(token, JWT_SECRET);
+    c.set("user", payload as any);
+    await next();
+  } catch {
+    return c.json({ error: "Invalid token" }, 401);
+  }
+});
 
 // Helper to calculate next payment date
 const calculateNextDate = (current: Date, cycle: string) => {
@@ -27,6 +50,7 @@ app.get("/", async (c) => {
     });
     return c.json({ subscriptions: subs });
   } catch (error) {
+    console.error(error);
     return c.json({ error: "Failed to fetch subscriptions" }, 500);
   }
 });
@@ -39,12 +63,6 @@ app.post("/", async (c) => {
 
   try {
     const start = new Date(startDate);
-    // If start date is in past, calculate next payment date from today or just set it to start date?
-    // Logic: If I subscribed Netflix on 1st of month, and today is 15th, next payment is 1st of next month.
-    // For simplicity, let's assume startDate is the "First Payment Date" or "Next Payment Date".
-    // If user says "Started 3 years ago", calculating next date is complex.
-    // Let's interpret 'startDate' as 'First billing date to track'.
-
     let nextPayment = new Date(start);
     const now = new Date();
 
@@ -90,7 +108,6 @@ app.delete("/:id", async (c) => {
 });
 
 // POST /subscriptions/check - Manually trigger check for due subscriptions
-// This should ideally be called on App Open
 app.post("/check", async (c) => {
   const user = c.get("user");
   const now = new Date();
@@ -107,7 +124,6 @@ app.post("/check", async (c) => {
     const createdTransactions = [];
 
     for (const sub of dueSubs) {
-      // Create Transaction
       const wallet = await prisma.wallet.findFirst({
         where: { userId: user.id },
       });
@@ -120,12 +136,11 @@ app.post("/check", async (c) => {
             type: "EXPENSE",
             category: sub.category,
             description: `Renewal: ${sub.name}`,
-            date: new Date(), // Today
+            date: new Date(),
           },
         });
         createdTransactions.push(tx);
 
-        // Update next payment date
         const nextDate = calculateNextDate(
           sub.nextPaymentDate,
           sub.billingCycle

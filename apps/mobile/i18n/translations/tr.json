@@ -10,7 +10,9 @@
     "edit": "Düzenle",
     "error": "Hata",
     "success": "Başarılı",
-    "clickToOpen": "Açmak için tıklayın"
+    "clickToOpen": "Açmak için tıklayın",
+    "confirm": "Onayla",
+    "confirmPassword": "Şifreyi Onayla"
   },
   "onboarding": {
     "title1": "Daha Akıllıca Harca",

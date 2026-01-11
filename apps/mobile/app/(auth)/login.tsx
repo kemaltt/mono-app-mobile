@@ -24,22 +24,29 @@ export default function LoginScreen() {
   const [fieldErrors, setFieldErrors] = useState<{[key: string]: string}>({});
   const [showPassword, setShowPassword] = useState(false);
   const [isBiometricAvailable, setIsBiometricAvailable] = useState(false);
+  const [biometricType, setBiometricType] = useState<number | null>(null);
 
   useEffect(() => {
     (async () => {
       const hasHardware = await LocalAuthentication.hasHardwareAsync();
       const isEnrolled = await LocalAuthentication.isEnrolledAsync();
+      const supportedTypes = await LocalAuthentication.supportedAuthenticationTypesAsync();
       if (hasHardware && isEnrolled) {
         setIsBiometricAvailable(true);
+        if (supportedTypes.length > 0) {
+            setBiometricType(supportedTypes[0]);
+        }
       }
     })();
   }, []);
 
   const handleBiometricLogin = async () => {
     try {
+      const label = biometricType === LocalAuthentication.AuthenticationType.FACIAL_RECOGNITION ? 'FaceID' : 'TouchID';
       const result = await LocalAuthentication.authenticateAsync({
-        promptMessage: t('auth.loginWithFaceID'),
+        promptMessage: t('auth.loginWithBiometrics') || `Login with ${label}`,
         fallbackLabel: t('common.cancel'),
+        disableDeviceFallback: false,
       });
 
       if (result.success) {
@@ -230,7 +237,14 @@ export default function LoginScreen() {
                onPress={handleBiometricLogin}
                style={styles.biometricButton}
              >
-                <Ionicons name="finger-print-outline" size={32} color="#586EEF" />
+                <Ionicons 
+                   name={biometricType === LocalAuthentication.AuthenticationType.FACIAL_RECOGNITION ? "scan-outline" : "finger-print-outline"} 
+                   size={28} 
+                   color="#586EEF" 
+                />
+                <Text style={styles.biometricText}>
+                   {biometricType === LocalAuthentication.AuthenticationType.FACIAL_RECOGNITION ? 'FaceID' : 'TouchID'}
+                </Text>
              </TouchableOpacity>
            )}
         </View>
@@ -390,8 +404,18 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   biometricButton: {
-    marginTop: 20,
+    marginTop: 25,
     alignItems: 'center',
     padding: 10,
+    flexDirection: 'row',
+    gap: 10,
+    backgroundColor: '#F3F6FF',
+    paddingHorizontal: 20,
+    borderRadius: 20,
+  },
+  biometricText: {
+    color: '#586EEF',
+    fontWeight: '700',
+    fontSize: 16,
   }
 });
