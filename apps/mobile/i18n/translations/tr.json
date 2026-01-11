@@ -28,6 +28,7 @@
     "haveAccount": "Zaten hesabınız var mı?",
     "loggingIn": "Giriş yapılıyor...",
     "creatingAccount": "Hesap oluşturuluyor...",
+    "loginWithBiometrics": "Giriş için doğrulama yapın",
     "loginWithFaceID": "FaceID ile Giriş Yap",
     "loginWithTouchID": "TouchID ile Giriş Yap",
     "biometricAuthFailed": "Biyometrik doğrulama başarısız oldu",

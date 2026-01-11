@@ -28,6 +28,7 @@
     "haveAccount": "Bereits ein Konto?",
     "loggingIn": "Einloggen...",
     "creatingAccount": "Konto wird erstellt...",
+    "loginWithBiometrics": "Authentifizieren, um sich anzumelden",
     "loginWithFaceID": "Mit FaceID anmelden",
     "loginWithTouchID": "Mit TouchID anmelden",
     "biometricAuthFailed": "Biometrische Authentifizierung fehlgeschlagen",

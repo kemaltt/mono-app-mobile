@@ -41,10 +41,11 @@ export default function LoginScreen() {
   }, []);
 
   const handleBiometricLogin = async () => {
+    if (loading) return;
+    
     try {
-      const label = biometricType === LocalAuthentication.AuthenticationType.FACIAL_RECOGNITION ? 'FaceID' : 'TouchID';
       const result = await LocalAuthentication.authenticateAsync({
-        promptMessage: t('auth.loginWithBiometrics') || `Login with ${label}`,
+        promptMessage: t('auth.loginWithBiometrics') || 'Authenticate to log in',
         fallbackLabel: t('common.cancel'),
         disableDeviceFallback: false,
       });
@@ -61,12 +62,17 @@ export default function LoginScreen() {
             Toast.show({
                 type: 'info',
                 text1: t('common.info'),
-                text2: "Please login manually once to enable FaceID",
+                text2: "FaceID data not found. Please log in manually once.",
             });
         }
       }
-    } catch (e) {
-        console.log(e);
+    } catch (e: any) {
+        console.log('Biometric Login Error:', e);
+        Toast.show({
+            type: 'error',
+            text1: t('common.error'),
+            text2: e?.message || "Biometric authentication failed"
+        });
     }
   };
 

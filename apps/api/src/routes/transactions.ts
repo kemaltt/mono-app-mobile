@@ -129,8 +129,10 @@ app.post("/scan", async (c) => {
     const arrayBuffer = await file.arrayBuffer();
     const base64Data = Buffer.from(arrayBuffer).toString("base64");
 
-    const prompt = `You are an expert financial assistant. Analyze this receipt image or PDF and extract the transaction details.
-        
+    const prompt = `You are an expert financial and visual assistant. Analyze this image or PDF. 
+        If the image is a receipt or bill, extract the transaction details. 
+        If it is a general object (e.g., a chair, a plant, a car, etc.), identify what it is and describe it logically.
+
         Return ONLY a JSON object with this exact structure:
         {
           "amount": number,
@@ -140,14 +142,34 @@ app.post("/scan", async (c) => {
         }
 
         Instructions:
-        1. "amount": Find the FINAL TOTAL amount. Ignore tax breakdowns or sub-totals.
-        2. "category": Choose the most appropriate English key from the list above.
-        3. "description": Provide a short summary or merchant name in ${lang} language.
+        1. "amount": For receipts, find the FINAL TOTAL. For general objects without a visible price, use 0.
+        2. "category": Choose the most appropriate English key from the list above based on the item identified (e.g., Chair -> "Shopping", Car -> "Transport", Sandwich -> "Food").
+        3. "description": Provide a short, professional summary or merchant name in ${lang} language. If it's an object, describe it (e.g., "Mavi bir sandalye", "Kırmızı bir araba").
         4. "date": Extract the transaction date. Use current date (${
           new Date().toISOString().split("T")[0]
         }) if not found.
         5. Tone: Ensure the "description" is professional and localized for ${lang}.
         6. NO markdown, NO code blocks, NO extra text. Just the JSON.`;
+
+    // const prompt = `You are an expert financial assistant. Analyze this receipt image or PDF and extract the transaction details.
+
+    //     Return ONLY a JSON object with this exact structure:
+    //     {
+    //       "amount": number,
+    //       "category": "Food" | "Market" | "Transport" | "Shopping" | "Subscriptions" | "Health" | "Entertainment" | "Others",
+    //       "description": "string",
+    //       "date": "YYYY-MM-DD"
+    //     }
+
+    //     Instructions:
+    //     1. "amount": Find the FINAL TOTAL amount. Ignore tax breakdowns or sub-totals.
+    //     2. "category": Choose the most appropriate English key from the list above.
+    //     3. "description": Provide a short summary or merchant name in ${lang} language.
+    //     4. "date": Extract the transaction date. Use current date (${
+    //       new Date().toISOString().split("T")[0]
+    //     }) if not found.
+    //     5. Tone: Ensure the "description" is professional and localized for ${lang}.
+    //     6. NO markdown, NO code blocks, NO extra text. Just the JSON.`;
 
     // const prompt = `Analyze this receipt and extract the following information in JSON format:
     // - amount (numeric value only)
@@ -156,7 +178,6 @@ app.post("/scan", async (c) => {
     // - date (ISO format if found, otherwise current date)
 
     // Only return the JSON object, nothing else.`
-
     const result = await model.generateContent([
       prompt,
       {
