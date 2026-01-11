@@ -82,7 +82,7 @@ auth.post(
               currency: "USD",
             },
           },
-        },
+        } as any,
       });
 
       // Send the email (non-blocking if you want speed, but let's wait to be sure)
@@ -142,12 +142,11 @@ auth.post(
       });
 
       // Send Welcome Email if it's a trial user
-      if (updatedUser.licenseTier === "TRIAL" && updatedUser.trialEndsAt) {
-        sendTrialWelcomeEmail(updatedUser.email, updatedUser.trialEndsAt).catch(
-          (err) => {
-            console.error("Failed to send trial welcome email:", err);
-          }
-        );
+      const u = updatedUser as any;
+      if (u.licenseTier === "TRIAL" && u.trialEndsAt) {
+        sendTrialWelcomeEmail(u.email, u.trialEndsAt).catch((err) => {
+          console.error("Failed to send trial welcome email:", err);
+        });
       }
 
       const token = await sign({ id: user.id, email: user.email }, JWT_SECRET);
@@ -162,8 +161,8 @@ auth.post(
           lastName: user.lastName,
           avatarUrl: user.avatarUrl,
           timezone: user.timezone,
-          licenseTier: user.licenseTier,
-          trialEndsAt: user.trialEndsAt,
+          licenseTier: (user as any).licenseTier,
+          trialEndsAt: (user as any).trialEndsAt,
         },
       });
     } catch (error) {
@@ -290,8 +289,8 @@ auth.post(
           avatarUrl: user.avatarUrl,
           status: user.status,
           timezone: user.timezone,
-          licenseTier: user.licenseTier,
-          trialEndsAt: user.trialEndsAt,
+          licenseTier: (user as any).licenseTier,
+          trialEndsAt: (user as any).trialEndsAt,
         },
       });
     } catch (error) {

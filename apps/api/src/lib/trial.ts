@@ -1,13 +1,13 @@
 import prisma from "./prisma";
 
 export async function isTrialExpired(userId: string): Promise<boolean> {
-  const user = await prisma.user.findUnique({
+  const user = await (prisma.user.findUnique({
     where: { id: userId },
     select: {
       licenseTier: true,
       trialEndsAt: true,
     },
-  });
+  } as any) as Promise<any>);
 
   if (!user) return false;
 
@@ -25,13 +25,13 @@ export async function checkTrialStatus(userId: string): Promise<{
   licenseTier: string;
   daysLeft: number;
 }> {
-  const user = await prisma.user.findUnique({
+  const user = await (prisma.user.findUnique({
     where: { id: userId },
     select: {
       licenseTier: true,
       trialEndsAt: true,
     },
-  });
+  } as any) as Promise<any>);
 
   if (!user) {
     return { isExpired: false, licenseTier: "FREE", daysLeft: 0 };

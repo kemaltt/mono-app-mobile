@@ -37,8 +37,9 @@ profile.get("/me", async (c) => {
 
   // Add trial status info
   const now = new Date();
-  const endsAt = user.trialEndsAt ? new Date(user.trialEndsAt) : now;
-  const isExpired = user.licenseTier === "TRIAL" && now > endsAt;
+  const u = user as any;
+  const endsAt = u.trialEndsAt ? new Date(u.trialEndsAt) : now;
+  const isExpired = u.licenseTier === "TRIAL" && now > endsAt;
   const diffTime = endsAt.getTime() - now.getTime();
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 

@@ -16,13 +16,14 @@ async function runTrialReminders() {
   });
 
   for (const user of trialUsers) {
-    if (!user.trialEndsAt) continue;
+    const u = user as any;
+    if (!u.trialEndsAt) continue;
 
-    const endsAt = new Date(user.trialEndsAt);
+    const endsAt = new Date(u.trialEndsAt);
     const diffTime = endsAt.getTime() - now.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-    console.log(`User ${user.email} has ${diffDays} days left.`);
+    console.log(`User ${u.email} has ${diffDays} days left.`);
 
     // Send reminders at 7, 3, and 1 day remaining
     if ([7, 3, 1].includes(diffDays)) {

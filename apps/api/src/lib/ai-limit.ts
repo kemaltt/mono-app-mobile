@@ -12,7 +12,7 @@ export async function checkAndIncrementAiUsage(userId: string): Promise<{
   trialExpired?: boolean;
   limitReached?: boolean;
 }> {
-  const user = await prisma.user.findUnique({
+  const user = await (prisma.user.findUnique({
     where: { id: userId },
     select: {
       licenseTier: true,
@@ -20,7 +20,7 @@ export async function checkAndIncrementAiUsage(userId: string): Promise<{
       aiUsageResetAt: true,
       trialEndsAt: true,
     },
-  });
+  } as any) as Promise<any>);
 
   if (!user) {
     throw new Error("User not found");
@@ -29,8 +29,9 @@ export async function checkAndIncrementAiUsage(userId: string): Promise<{
   const now = new Date();
 
   // Check trial expiration
-  if (user.licenseTier === "TRIAL" && user.trialEndsAt) {
-    if (now > new Date(user.trialEndsAt)) {
+  const u = user as any;
+  if (u.licenseTier === "TRIAL" && u.trialEndsAt) {
+    if (now > new Date(u.trialEndsAt)) {
       return { allowed: false, remaining: 0, trialExpired: true };
     }
   }
