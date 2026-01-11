@@ -1,7 +1,10 @@
 import { Hono } from "hono";
 import prisma from "../lib/prisma";
+import { trialGuard } from "../middleware/trial-check";
 
 const app = new Hono<{ Variables: { user: any } }>();
+
+app.use("/*", trialGuard);
 
 // GET /debts - List all
 app.get("/", async (c) => {

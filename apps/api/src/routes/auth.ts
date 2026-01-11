@@ -4,7 +4,11 @@ import { z } from "zod";
 import * as argon2 from "argon2";
 import { sign } from "hono/jwt";
 import prisma from "../lib/prisma";
-import { sendVerificationEmail } from "../lib/email";
+import {
+  sendVerificationEmail,
+  sendPasswordChangeEmail,
+  sendTrialWelcomeEmail,
+} from "../lib/email";
 
 const auth = new Hono();
 const JWT_SECRET = process.env.JWT_SECRET || "supersecretkeyshouldbehidden";
@@ -129,13 +133,22 @@ auth.post(
         return c.json({ error: "Invalid verification code" }, 400);
       }
 
-      await prisma.user.update({
+      const updatedUser = await prisma.user.update({
         where: { email },
         data: {
           isVerified: true,
           verificationCode: null,
         },
       });
+
+      // Send Welcome Email if it's a trial user
+      if (updatedUser.licenseTier === "TRIAL" && updatedUser.trialEndsAt) {
+        sendTrialWelcomeEmail(updatedUser.email, updatedUser.trialEndsAt).catch(
+          (err) => {
+            console.error("Failed to send trial welcome email:", err);
+          }
+        );
+      }
 
       const token = await sign({ id: user.id, email: user.email }, JWT_SECRET);
 

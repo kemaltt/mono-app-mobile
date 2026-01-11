@@ -6,8 +6,9 @@ import prisma from "../lib/prisma";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { addXP, unlockAchievement } from "../lib/gamification";
 import { checkAndIncrementAiUsage } from "../lib/ai-limit";
+import { trialGuard } from "../middleware/trial-check";
 
-const JWT_SECRET = process.env.JWT_SECRET || "supersecretkeyshouldbehidden";
+const JWT_SECRET = process.env.JWT_SECRET;
 
 type Variables = {
   user: {
@@ -35,6 +36,9 @@ app.use("/*", async (c, next) => {
     return c.json({ error: "Invalid token" }, 401);
   }
 });
+
+// Enforce trial limits on mutations
+app.use("/*", trialGuard);
 
 // Schema for creating transaction
 const createTransactionSchema = z.object({

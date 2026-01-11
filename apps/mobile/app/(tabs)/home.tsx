@@ -13,6 +13,7 @@ import { useTheme } from '../../context/theme';
 import { Colors } from '../../constants/theme';
 import { API_URL } from '../../constants/Config';
 import Toast from 'react-native-toast-message';
+import AiLimitModal from '../../components/AiLimitModal';
 
 export default function HomeScreen() {
   const { t } = useTranslation();
@@ -25,6 +26,7 @@ export default function HomeScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [isBalanceVisible, setIsBalanceVisible] = useState(true);
+  const [limitModalVisible, setLimitModalVisible] = useState(false);
   const pulseAnim = useState(new Animated.Value(0.3))[0];
 
   useEffect(() => {
@@ -37,6 +39,12 @@ export default function HomeScreen() {
         ).start();
     }
   }, [loading]);
+
+  useEffect(() => {
+    if (user?.trialExpired) {
+        setLimitModalVisible(true);
+    }
+  }, [user?.trialExpired]);
 
   const fetchData = useCallback(async (isRefreshing = false) => {
     try {
@@ -300,6 +308,15 @@ export default function HomeScreen() {
         </View>
 
       </ScrollView>
+      <AiLimitModal 
+          isVisible={limitModalVisible}
+          onClose={() => setLimitModalVisible(false)}
+          onUpgrade={() => {
+              setLimitModalVisible(false);
+              router.push('/profile/membership');
+          }}
+          message={t('common.trialExpiredMessage')}
+      />
     </SafeAreaView>
   );
 }

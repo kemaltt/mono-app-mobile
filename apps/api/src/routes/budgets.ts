@@ -4,6 +4,7 @@ import { z } from "zod";
 import { verify } from "hono/jwt";
 import prisma from "../lib/prisma";
 import { addXP } from "../lib/gamification";
+import { trialGuard } from "../middleware/trial-check";
 
 const JWT_SECRET = process.env.JWT_SECRET || "supersecretkeyshouldbehidden";
 
@@ -28,6 +29,8 @@ app.use("/*", async (c, next) => {
     return c.json({ error: "Invalid token" }, 401);
   }
 });
+
+app.use("/*", trialGuard);
 
 const createBudgetSchema = z.object({
   name: z.string(),

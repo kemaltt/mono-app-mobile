@@ -256,11 +256,18 @@ export default function AddTransactionScreen() {
             })
         });
 
-        if (!response.ok) {
-            throw new Error('Failed to create transaction');
+        const data = await response.json();
+
+        if (response.status === 403 && data.trialExpired) {
+            setLimitMessage(t('common.trialExpiredMessage'));
+            setLimitModalVisible(true);
+            setLoading(false);
+            return;
         }
 
-        const data = await response.json();
+        if (!response.ok) {
+            throw new Error(data.message || data.error || 'Failed to create transaction');
+        }
 
         // Show Gamification Rewards
         if (data.gainedXP) showXP(data.gainedXP);

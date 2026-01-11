@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import { verify } from "hono/jwt";
 import prisma from "../lib/prisma";
+import { trialGuard } from "../middleware/trial-check";
 
 const JWT_SECRET = process.env.JWT_SECRET || "supersecretkeyshouldbehidden";
 
@@ -25,6 +26,8 @@ app.use("/*", async (c, next) => {
     return c.json({ error: "Invalid token" }, 401);
   }
 });
+
+app.use("/*", trialGuard);
 
 // Helper to calculate next payment date
 const calculateNextDate = (current: Date, cycle: string) => {

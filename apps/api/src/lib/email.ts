@@ -1,10 +1,10 @@
-import nodemailer from 'nodemailer';
-import path from 'path';
+import nodemailer from "nodemailer";
+import path from "path";
 
 const transporter = nodemailer.createTransport({
   host: process.env.EMAIL_HOST,
   port: Number(process.env.EMAIL_PORT),
-  secure: process.env.EMAIL_SECURE === 'true',
+  secure: process.env.EMAIL_SECURE === "true",
   auth: {
     user: process.env.SMTP_EMAIL,
     pass: process.env.SMTP_PASSWORD,
@@ -12,12 +12,12 @@ const transporter = nodemailer.createTransport({
 });
 
 export const sendVerificationEmail = async (to: string, code: string) => {
-  const logoPath = path.join(process.cwd(), 'assets', 'logo.png');
-  
+  const logoPath = path.join(process.cwd(), "assets", "logo.png");
+
   const mailOptions = {
     from: process.env.EMAIL_FROM,
     to,
-    subject: 'Mono - Email Verification',
+    subject: "Mono - Email Verification",
     html: `
       <!DOCTYPE html>
       <html>
@@ -52,24 +52,24 @@ export const sendVerificationEmail = async (to: string, code: string) => {
       </body>
       </html>
     `,
-    attachments: [{ filename: 'logo.png', path: logoPath, cid: 'monologo' }]
+    attachments: [{ filename: "logo.png", path: logoPath, cid: "monologo" }],
   };
 
   try {
     await transporter.sendMail(mailOptions);
   } catch (error) {
-    console.error('Error sending verification email:', error);
-    throw new Error('Failed to send verification email');
+    console.error("Error sending verification email:", error);
+    throw new Error("Failed to send verification email");
   }
 };
 
 export const sendPasswordChangeEmail = async (to: string, code: string) => {
-  const logoPath = path.join(process.cwd(), 'assets', 'logo.png');
-  
+  const logoPath = path.join(process.cwd(), "assets", "logo.png");
+
   const mailOptions = {
     from: process.env.EMAIL_FROM,
     to,
-    subject: 'Mono - Password Change Verification',
+    subject: "Mono - Password Change Verification",
     html: `
       <!DOCTYPE html>
       <html>
@@ -104,25 +104,25 @@ export const sendPasswordChangeEmail = async (to: string, code: string) => {
       </body>
       </html>
     `,
-    attachments: [{ filename: 'logo.png', path: logoPath, cid: 'monologo' }]
+    attachments: [{ filename: "logo.png", path: logoPath, cid: "monologo" }],
   };
 
   try {
     await transporter.sendMail(mailOptions);
   } catch (error) {
-    console.error('Error sending password change email:', error);
-    throw new Error('Failed to send password change email');
+    console.error("Error sending password change email:", error);
+    throw new Error("Failed to send password change email");
   }
 };
 
 export const sendDeleteRequestEmail = async (to: string, code: string) => {
-  const logoPath = path.join(process.cwd(), 'assets', 'logo.png');
+  const logoPath = path.join(process.cwd(), "assets", "logo.png");
   // ... common setup ...
-  
+
   const mailOptions = {
     from: process.env.EMAIL_FROM,
     to,
-    subject: 'Mono - Bestätigungscode zur Kündigung',
+    subject: "Mono - Bestätigungscode zur Kündigung",
     html: `
       <!DOCTYPE html>
       <html>
@@ -157,19 +157,19 @@ export const sendDeleteRequestEmail = async (to: string, code: string) => {
       </body>
       </html>
     `,
-    attachments: [{ filename: 'logo.png', path: logoPath, cid: 'monologo' }]
+    attachments: [{ filename: "logo.png", path: logoPath, cid: "monologo" }],
   };
 
   await transporter.sendMail(mailOptions);
 };
 
 export const sendDeleteConfirmEmail = async (to: string) => {
-  const logoPath = path.join(process.cwd(), 'assets', 'logo.png');
-  
+  const logoPath = path.join(process.cwd(), "assets", "logo.png");
+
   const mailOptions = {
     from: process.env.EMAIL_FROM,
     to,
-    subject: 'Mono - Kündigungsbestätigung',
+    subject: "Mono - Kündigungsbestätigung",
     html: `
       <!DOCTYPE html>
       <html>
@@ -201,19 +201,19 @@ export const sendDeleteConfirmEmail = async (to: string) => {
       </body>
       </html>
     `,
-    attachments: [{ filename: 'logo.png', path: logoPath, cid: 'monologo' }]
+    attachments: [{ filename: "logo.png", path: logoPath, cid: "monologo" }],
   };
 
   await transporter.sendMail(mailOptions);
 };
 
 export const sendUndoDeleteEmail = async (to: string, code: string) => {
-  const logoPath = path.join(process.cwd(), 'assets', 'logo.png');
-  
+  const logoPath = path.join(process.cwd(), "assets", "logo.png");
+
   const mailOptions = {
     from: process.env.EMAIL_FROM,
     to,
-    subject: 'Mono - Kündigung widerrufen',
+    subject: "Mono - Kündigung widerrufen",
     html: `
       <!DOCTYPE html>
       <html>
@@ -248,19 +248,19 @@ export const sendUndoDeleteEmail = async (to: string, code: string) => {
       </body>
       </html>
     `,
-    attachments: [{ filename: 'logo.png', path: logoPath, cid: 'monologo' }]
+    attachments: [{ filename: "logo.png", path: logoPath, cid: "monologo" }],
   };
 
   await transporter.sendMail(mailOptions);
 };
 
 export const sendUndoConfirmEmail = async (to: string) => {
-  const logoPath = path.join(process.cwd(), 'assets', 'logo.png');
-  
+  const logoPath = path.join(process.cwd(), "assets", "logo.png");
+
   const mailOptions = {
     from: process.env.EMAIL_FROM,
     to,
-    subject: 'Mono - Kündigung storniert',
+    subject: "Mono - Kündigung storniert",
     html: `
       <!DOCTYPE html>
       <html>
@@ -291,7 +291,145 @@ export const sendUndoConfirmEmail = async (to: string) => {
       </body>
       </html>
     `,
-    attachments: [{ filename: 'logo.png', path: logoPath, cid: 'monologo' }]
+    attachments: [{ filename: "logo.png", path: logoPath, cid: "monologo" }],
+  };
+
+  await transporter.sendMail(mailOptions);
+};
+
+export const sendTrialWelcomeEmail = async (to: string, trialEndDate: Date) => {
+  const logoPath = path.join(process.cwd(), "assets", "logo.png");
+  const dateStr = trialEndDate.toLocaleDateString("de-DE");
+
+  const mailOptions = {
+    from: process.env.EMAIL_FROM,
+    to,
+    subject: "Willkommen bei Mono - Ihre 30-tägige Testversion",
+    html: `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <style>
+          body { margin: 0; padding: 0; background-color: #f4f7ff; }
+          .container { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 40px 20px; }
+          .card { background-color: #ffffff; border-radius: 24px; padding: 48px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 10px 10px -5px rgba(0, 0, 0, 0.02); text-align: center; border: 1px solid #eef2ff; }
+          .logo { width: 80px; height: 80px; margin-bottom: 32px; border-radius: 20px; }
+          .title { font-size: 28px; font-weight: 800; color: #1e293b; margin-bottom: 12px; letter-spacing: -0.02em; }
+          .subtitle { font-size: 16px; color: #64748b; margin-bottom: 40px; line-height: 1.6; }
+          .feature-card { background: #f8faff; border-radius: 16px; padding: 20px; margin-bottom: 12px; text-align: left; border: 1px solid #eef2ff; }
+          .feature-title { font-weight: 700; color: #1e293b; margin-bottom: 4px; }
+          .feature-desc { font-size: 14px; color: #64748b; }
+          .trial-info { margin: 32px 0; padding: 20px; background: #eef2ff; border-radius: 16px; color: #4361ee; font-weight: 600; }
+          .divider { height: 1px; background: linear-gradient(to right, transparent, #e2e8f0, transparent); margin: 40px 0; }
+          .company-footer { font-size: 12px; color: #cbd5e1; font-weight: 500; text-transform: uppercase; letter-spacing: 0.1em; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="card">
+            <img src="cid:monologo" alt="Mono" class="logo" />
+            <h1 class="title">Willkommen bei Mono!</h1>
+            <p class="subtitle">Wir freuen uns, Sie an Bord zu haben. Ihre 30-tägige Testversion für alle Premium-Funktionen hat begonnen.</p>
+            
+            <div class="trial-info">Gültig bis: ${dateStr}</div>
+
+            <div class="feature-card">
+              <div class="feature-title">KI-Unterstützung</div>
+              <div class="feature-desc">Scannen Sie Belege und erhalten Sie intelligente Einblicke in Ihre Finanzen.</div>
+            </div>
+            <div class="feature-card">
+              <div class="feature-title">Budget-Planung</div>
+              <div class="feature-desc">Setzen Sie sich Ziele und behalten Sie Ihre Ausgaben im Griff.</div>
+            </div>
+            <div class="feature-card">
+              <div class="feature-title">Gamification</div>
+              <div class="feature-desc">Sammeln Sie XP und schalten Sie Erfolge frei, während Sie sparen.</div>
+            </div>
+
+            <p class="subtitle" style="margin-top: 32px;">Entdecken Sie die App und fangen Sie an, smarter mit Ihrem Geld umzugehen.</p>
+            
+            <div class="divider"></div>
+            <div class="company-footer">&copy; ${new Date().getFullYear()} Mono Finance &bull; Premium Banking Experience</div>
+          </div>
+        </div>
+      </body>
+      </html>
+    `,
+    attachments: [{ filename: "logo.png", path: logoPath, cid: "monologo" }],
+  };
+
+  await transporter.sendMail(mailOptions);
+};
+
+export const sendTrialReminderEmail = async (to: string, daysLeft: number) => {
+  const logoPath = path.join(process.cwd(), "assets", "logo.png");
+
+  const mailOptions = {
+    from: process.env.EMAIL_FROM,
+    to,
+    subject: `Mono - Noch ${daysLeft} ${
+      daysLeft === 1 ? "Tag" : "Tage"
+    } Testversion`,
+    html: `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <style>
+          body { margin: 0; padding: 0; background-color: #f4f7ff; }
+          .container { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 40px 20px; }
+          .card { background-color: #ffffff; border-radius: 24px; padding: 48px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 10px 10px -5px rgba(0, 0, 0, 0.02); text-align: center; border: 1px solid #eef2ff; }
+          .logo { width: 80px; height: 80px; margin-bottom: 32px; border-radius: 20px; }
+          .title { font-size: 28px; font-weight: 800; color: #1e293b; margin-bottom: 12px; letter-spacing: -0.02em; }
+          .subtitle { font-size: 16px; color: #64748b; margin-bottom: 40px; line-height: 1.6; }
+          .tier-container { display: flex; gap: 20px; margin: 32px 0; }
+          .tier-card { flex: 1; padding: 24px; border-radius: 20px; border: 2px solid #eef2ff; text-align: left; }
+          .tier-pro { border-color: #4361ee; background: #f8faff; }
+          .tier-title { font-size: 18px; font-weight: 800; color: #1e293b; margin-bottom: 8px; }
+          .tier-price { font-size: 24px; font-weight: 800; color: #4361ee; margin-bottom: 16px; }
+          .feature-item { font-size: 14px; color: #64748b; margin-bottom: 8px; display: flex; align-items: center; }
+          .feature-item::before { content: '✓'; color: #10b981; margin-right: 8px; font-weight: bold; }
+          .upgrade-btn { display: inline-block; background: #4361ee; color: white; padding: 16px 32px; border-radius: 16px; text-decoration: none; font-weight: 700; margin-top: 32px; }
+          .divider { height: 1px; background: linear-gradient(to right, transparent, #e2e8f0, transparent); margin: 40px 0; }
+          .company-footer { font-size: 12px; color: #cbd5e1; font-weight: 500; text-transform: uppercase; letter-spacing: 0.1em; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="card">
+            <img src="cid:monologo" alt="Mono" class="logo" />
+            <h1 class="title">Ihre Testversion läuft bald ab</h1>
+            <p class="subtitle">Nur noch <b>${daysLeft} ${
+      daysLeft === 1 ? "Tag" : "Tage"
+    }</b> verbleibend. Wechseln Sie jetzt zu einem PRO oder ULTIMATE Plan, um alle Funktionen weiterhin uneingeschränkt nutzen zu können.</p>
+            
+            <div class="tier-card tier-pro">
+              <div class="tier-title">PRO PLAN</div>
+              <div class="tier-price">$9.99 / Monat</div>
+              <div class="feature-item">100 KI-Scans pro Tag</div>
+              <div class="feature-item">Erweiterte KI-Einblicke</div>
+              <div class="feature-item">Benutzerdefinierte Kategorien</div>
+            </div>
+
+            <div class="tier-card" style="margin-top: 16px;">
+              <div class="tier-title">ULTIMATE</div>
+              <div class="tier-price">$24.99 / Monat</div>
+              <div class="feature-item">Unbegrenzte KI-Scans</div>
+              <div class="feature-item">Vollständige Finanzberichte</div>
+              <div class="feature-item">Persönlicher Berater</div>
+            </div>
+
+            <a href="#" class="upgrade-btn">Jetzt upgraden</a>
+
+            <div class="divider"></div>
+            <div class="company-footer">&copy; ${new Date().getFullYear()} Mono Finance &bull; Premium Banking Experience</div>
+          </div>
+        </div>
+      </body>
+      </html>
+    `,
+    attachments: [{ filename: "logo.png", path: logoPath, cid: "monologo" }],
   };
 
   await transporter.sendMail(mailOptions);

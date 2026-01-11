@@ -34,7 +34,19 @@ profile.get("/me", async (c) => {
   if (!user) return c.json({ error: "User not found" }, 404);
 
   const { password, verificationCode, ...safeUser } = user;
-  return c.json(safeUser);
+
+  // Add trial status info
+  const now = new Date();
+  const endsAt = user.trialEndsAt ? new Date(user.trialEndsAt) : now;
+  const isExpired = user.licenseTier === "TRIAL" && now > endsAt;
+  const diffTime = endsAt.getTime() - now.getTime();
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+  return c.json({
+    ...safeUser,
+    trialExpired: isExpired,
+    trialDaysLeft: Math.max(0, diffDays),
+  });
 });
 
 // REQUEST PASSWORD CHANGE
