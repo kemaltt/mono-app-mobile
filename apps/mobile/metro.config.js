@@ -15,4 +15,10 @@ config.resolver.nodeModulesPaths = [
   path.resolve(workspaceRoot, "node_modules"),
 ];
 
+// Re-map imports to the root node_modules if needed
+config.resolver.extraNodeModules = {
+  'expo-local-authentication': path.resolve(workspaceRoot, 'node_modules/expo-local-authentication'),
+  'expo-secure-store': path.resolve(workspaceRoot, 'node_modules/expo-secure-store'),
+};
+
 module.exports = config;

@@ -76,7 +76,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // 2. Identify where we are and where we should be
     if (!hasSeenOnboarding) {
       if (rootSegment !== 'onboarding') {
-        router.replace('/onboarding');
+        setTimeout(() => router.replace('/onboarding'), 1);
       }
       return;
     }
@@ -84,7 +84,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (!token) {
       // User has seen onboarding but no token
       if (rootSegment !== '(auth)') {
-        router.replace('/(auth)/login');
+        setTimeout(() => router.replace('/(auth)/login'), 1);
       }
     } else {
       // User has token
@@ -92,7 +92,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const s0 = rootSegment as any;
       const isGuestPage = !s0 || s0 === '(auth)' || s0 === 'onboarding' || s0 === 'index';
       if (isGuestPage) {
-        router.replace('/(tabs)/home');
+        setTimeout(() => router.replace('/(tabs)/home'), 1);
       }
     }
   }, [token, segments[0], isLoading, hasSeenOnboarding, navigationState?.key]);

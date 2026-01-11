@@ -7,17 +7,15 @@ module.exports = function (api) {
         return {
           visitor: {
             MemberExpression(path) {
-              if (path.matchesPattern('process.env.EXPO_ROUTER_APP_ROOT')) {
-                path.replaceWith({ type: 'StringLiteral', value: '../../app' });
-              }
-              if (path.matchesPattern('process.env.EXPO_ROUTER_IMPORT_MODE')) {
-                path.replaceWith({ type: 'StringLiteral', value: 'lazy' });
-              }
-              if (path.matchesPattern('process.env.EXPO_ROUTER_CONTEXT_MODULE')) {
-                path.replaceWith({ type: 'StringLiteral', value: '../../app' });
-              }
-              if (path.matchesPattern('process.env.EXPO_ROUTER_IMPORT_MODE')) {
-                path.replaceWith({ type: 'StringLiteral', value: 'sync' });
+              const replacements = {
+                'process.env.EXPO_ROUTER_APP_ROOT': '../../app',
+                'process.env.EXPO_ROUTER_IMPORT_MODE': 'sync',
+                'process.env.EXPO_ROUTER_CONTEXT_MODULE': '../../app',
+              };
+              for (const [key, value] of Object.entries(replacements)) {
+                if (path.matchesPattern(key)) {
+                  path.replaceWith({ type: 'StringLiteral', value });
+                }
               }
             }
           }

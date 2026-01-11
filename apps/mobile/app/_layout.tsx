@@ -1,7 +1,7 @@
 // @ts-nocheck
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import '../i18n/index';
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { View, ActivityIndicator } from 'react-native';
 import { Stack } from 'expo-router';
 import { useFonts } from 'expo-font';
@@ -68,9 +68,13 @@ export default function RootLayout() {
   }
 
   return (
-    <ThemeProvider>
-      <RootLayoutContent />
-    </ThemeProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <ThemeProvider>
+        <AuthProvider>
+          <RootLayoutContent />
+        </AuthProvider>
+      </ThemeProvider>
+    </GestureHandlerRootView>
   );
 }
 
@@ -79,26 +83,23 @@ function RootLayoutContent() {
   const { isLoading } = useAuth();
 
 
-  return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <AuthProvider>
-        <GamificationProvider>
-            <NavigationThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-              <Stack>
-                <Stack.Screen name="index" options={{ headerShown: false }} />
-                <Stack.Screen name="onboarding" options={{ headerShown: false }} />
-                <Stack.Screen name="modal" options={{ presentation: 'modal', headerShown: false }} />
-                <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-                <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-                <Stack.Screen name="subscriptions" options={{ headerShown: false }} />
-                <Stack.Screen name="debts" options={{ headerShown: false }} />
-                {/* <Stack.Screen name="profile" options={{ headerShown: false }} /> */}
-                <Stack.Screen name="transaction/[id]" options={{ headerShown: false }} />
-              </Stack>
-              <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
-              <Toast config={toastConfig} topOffset={60} />
-            </NavigationThemeProvider>
-        </GamificationProvider>
-      </AuthProvider>
-    </GestureHandlerRootView>  );
+  return useMemo(() => (
+    <GamificationProvider>
+      <NavigationThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+        <Stack>
+          <Stack.Screen name="index" options={{ headerShown: false }} />
+          <Stack.Screen name="onboarding" options={{ headerShown: false }} />
+          <Stack.Screen name="modal" options={{ presentation: 'modal', headerShown: false }} />
+          <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="subscriptions" options={{ headerShown: false }} />
+          <Stack.Screen name="debts" options={{ headerShown: false }} />
+          {/* <Stack.Screen name="profile" options={{ headerShown: false }} /> */}
+          <Stack.Screen name="transaction/[id]" options={{ headerShown: false }} />
+        </Stack>
+        <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
+        <Toast config={toastConfig} topOffset={60} />
+      </NavigationThemeProvider>
+    </GamificationProvider>
+  ), [colorScheme, isLoading]);
 }

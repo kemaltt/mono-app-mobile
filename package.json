@@ -19,5 +19,9 @@
   "devDependencies": {
     "@types/react": "~19.1.10",
     "typescript": "~5.9.2"
+  },
+  "dependencies": {
+    "expo-local-authentication": "^17.0.8",
+    "expo-secure-store": "^15.0.8"
   }
 }
