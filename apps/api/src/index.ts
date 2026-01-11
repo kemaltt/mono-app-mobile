@@ -15,8 +15,8 @@ import notifications from "./routes/notifications";
 
 const app = new Hono();
 
-app.use("*", logger());
-app.use("*", cors());
+// app.use("*", logger());
+// app.use("*", cors());
 
 app.use("/uploads/*", serveStatic({ root: "./" }));
 
