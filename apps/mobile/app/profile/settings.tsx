@@ -27,6 +27,7 @@ export default function SettingsScreen() {
   const [biometricLabel, setBiometricLabel] = useState('FaceID');
   const [isPassModalVisible, setIsPassModalVisible] = useState(false);
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
   const { user: authUser } = useAuth();
 
@@ -72,7 +73,14 @@ export default function SettingsScreen() {
   };
 
   const handleConfirmPassword = async () => {
-      if (!confirmPassword) return;
+      if (!confirmPassword) {
+          Toast.show({
+              type: 'error',
+              text1: t('common.error'),
+              text2: t('auth.fillAll')
+          });
+          return;
+      }
       
       setIsVerifying(true);
       try {
@@ -95,6 +103,7 @@ export default function SettingsScreen() {
                   setIsBiometricEnabled(true);
                   setIsPassModalVisible(false);
                   setConfirmPassword('');
+                  setShowPassword(false);
                   Toast.show({
                       type: 'success',
                       text1: t('common.success'),
@@ -102,11 +111,19 @@ export default function SettingsScreen() {
                   });
               }
           } else {
-              Alert.alert(t('common.error'), data.error || "Invalid password");
+              Toast.show({
+                  type: 'error',
+                  text1: t('common.error'),
+                  text2: data.error || "Invalid password"
+              });
           }
       } catch (e) {
           console.error(e);
-          Alert.alert("Error", "Connection failed. Please try again.");
+          Toast.show({
+              type: 'error',
+              text1: 'Error',
+              text2: "Connection failed. Please try again."
+          });
       } finally {
           setIsVerifying(false);
       }
@@ -438,25 +455,37 @@ export default function SettingsScreen() {
                 <Text style={[styles.passwordSub, { color: colors.subtext }]}>
                     Please enter your password to enable {biometricLabel}
                 </Text>
-                <TextInput
-                    style={[styles.passwordInput, { 
-                        backgroundColor: colorScheme === 'dark' ? '#111827' : '#F9FAFB',
-                        color: colors.text,
-                        borderColor: colorScheme === 'dark' ? '#334155' : '#E5E7EB'
-                    }]}
-                    placeholder={t('auth.password')}
-                    placeholderTextColor="#9CA3AF"
-                    secureTextEntry
-                    value={confirmPassword}
-                    onChangeText={setConfirmPassword}
-                    autoFocus
-                />
+                <View style={[styles.passwordInputContainer, { 
+                    backgroundColor: colorScheme === 'dark' ? '#111827' : '#F9FAFB',
+                    borderColor: colorScheme === 'dark' ? '#334155' : '#E5E7EB'
+                }]}>
+                    <TextInput
+                        style={[styles.passwordInput, { color: colors.text }]}
+                        placeholder={t('auth.password')}
+                        placeholderTextColor="#9CA3AF"
+                        secureTextEntry={!showPassword}
+                        value={confirmPassword}
+                        onChangeText={setConfirmPassword}
+                        autoFocus
+                    />
+                    <TouchableOpacity 
+                        style={styles.eyeIcon} 
+                        onPress={() => setShowPassword(!showPassword)}
+                    >
+                        <Ionicons 
+                            name={showPassword ? "eye-off-outline" : "eye-outline"} 
+                            size={22} 
+                            color="#6B7280" 
+                        />
+                    </TouchableOpacity>
+                </View>
                 <View style={styles.passwordButtons}>
                     <TouchableOpacity 
                         style={[styles.passBtn, styles.passBtnCancel]} 
                         onPress={() => {
                             setIsPassModalVisible(false);
                             setConfirmPassword('');
+                            setShowPassword(false);
                         }}
                     >
                         <Text style={styles.passBtnCancelText}>{t('common.cancel')}</Text>
@@ -642,13 +671,22 @@ const styles = StyleSheet.create({
       marginBottom: 20,
       lineHeight: 20,
   },
-  passwordInput: {
+  passwordInputContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
       height: 56,
       borderRadius: 16,
-      paddingHorizontal: 16,
-      fontSize: 16,
       borderWidth: 1,
       marginBottom: 20,
+      paddingHorizontal: 16,
+  },
+  passwordInput: {
+      flex: 1,
+      height: '100%',
+      fontSize: 16,
+  },
+  eyeIcon: {
+      padding: 4,
   },
   passwordButtons: {
       flexDirection: 'row',
