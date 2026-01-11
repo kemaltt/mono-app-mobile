@@ -24,6 +24,27 @@ app.get("/", (c) => {
   return c.text("Mono API is running!");
 });
 
+app.get("/db-test", async (c) => {
+  try {
+    const { PrismaClient } = await import("@prisma/client");
+    const prisma = new PrismaClient({
+      datasources: {
+        db: {
+          url: process.env.DATABASE_URL,
+        },
+      },
+      log: ["query", "info", "warn", "error"],
+    });
+    await prisma.$connect();
+    const result = await prisma.$queryRaw`SELECT 1`;
+    await prisma.$disconnect();
+    return c.json({ status: "ok", result });
+  } catch (error) {
+    console.error("DB Test Error:", error);
+    return c.json({ status: "error", error: String(error) }, 500);
+  }
+});
+
 app.route("/auth", auth);
 app.route("/transactions", transactions);
 app.route("/profile", profile);
