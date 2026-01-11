@@ -17,8 +17,8 @@ export default function WalletScreen() {
   const { colorScheme } = useTheme();
   const colors = Colors[colorScheme];
   const router = useRouter();
-  const { token } = useAuth();
-  const { showXP, showAchievement } = useGamification();
+  const { token, user, updateUser } = useAuth();
+  const { showXP, showAchievement, showLevelUp } = useGamification();
   const [dashboard, setDashboard] = useState(null);
   const [budgets, setBudgets] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
@@ -92,9 +92,15 @@ export default function WalletScreen() {
               fetchData();
               
               // Show Gamification Rewards
-              if (data.xp) showXP(data.xp);
+              if (data.gainedXP) showXP(data.gainedXP);
+              if (data.level && data.level > user.level) showLevelUp(data.level);
               if (data.unlockedAchievements && data.unlockedAchievements.length > 0) {
                   data.unlockedAchievements.forEach((ach: any) => showAchievement(ach));
+              }
+
+              // Update local user state for XP bar
+              if (data.xp !== undefined && data.level !== undefined) {
+                  updateUser({ ...user, xp: data.xp, level: data.level });
               }
 
               // Keep successVisible for short feedback if needed or remove it

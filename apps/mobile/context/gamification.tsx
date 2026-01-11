@@ -2,6 +2,7 @@
 // @ts-nocheck
 import React, { createContext, useContext, useState, useCallback } from 'react';
 import { View, Text, StyleSheet, Dimensions, Platform } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import Animated, { 
   FadeInUp, 
   FadeOutUp, 
@@ -18,7 +19,8 @@ const { width, height } = Dimensions.get('window');
 
 interface GamificationContextType {
   showXP: (amount: number) => void;
-  showAchievement: (achievement: { name: string, icon: string, xpReward: number }) => void;
+  showAchievement: (achievement: { name: string, description: string, icon: string, xpReward: number }) => void;
+  showLevelUp: (level: number) => void;
 }
 
 const GamificationContext = createContext<GamificationContextType>({
@@ -31,6 +33,8 @@ export const useGamification = () => useContext(GamificationContext);
 export function GamificationProvider({ children }: { children: React.ReactNode }) {
   const [xpQueue, setXpQueue] = useState<number[]>([]);
   const [achievements, setAchievements] = useState<any[]>([]);
+  const [levelUpQueue, setLevelUpQueue] = useState<number[]>([]);
+  const { t } = useTranslation();
 
   const showXP = useCallback((amount: number) => {
     setXpQueue(prev => [...prev, amount]);
@@ -48,8 +52,16 @@ export function GamificationProvider({ children }: { children: React.ReactNode }
     }, 5000);
   }, []);
 
+  const showLevelUp = useCallback((level: number) => {
+    setLevelUpQueue(prev => [...prev, level]);
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+    setTimeout(() => {
+      setLevelUpQueue(prev => prev.slice(1));
+    }, 6000);
+  }, []);
+
   return (
-    <GamificationContext.Provider value={{ showXP, showAchievement }}>
+    <GamificationContext.Provider value={{ showXP, showAchievement, showLevelUp }}>
       {children}
       
       {/* XP Popups */}
@@ -84,10 +96,37 @@ export function GamificationProvider({ children }: { children: React.ReactNode }
                 <Ionicons name={achievements[0].icon as any || "trophy"} size={40} color="#FFD700" />
             </View>
             <Text style={styles.congratsText}>Congratulations!</Text>
-            <Text style={styles.achievementName}>{achievements[0].name}</Text>
-            <Text style={styles.achievementDesc}>{achievements[0].description}</Text>
+            <Text style={styles.achievementName}>{t(`achievements.badge_${achievements[0].key}`) || achievements[0].name}</Text>
+            <Text style={styles.achievementDesc}>{t(`achievements.desc_${achievements[0].key}`) || achievements[0].description}</Text>
             <View style={styles.rewardBadge}>
                 <Text style={styles.rewardText}>+{achievements[0].xpReward} XP</Text>
+            </View>
+          </Animated.View>
+        </View>
+      )}
+
+      {/* Level Up Modal */}
+      {levelUpQueue.length > 0 && (
+        <View style={[styles.fullOverlay, { backgroundColor: 'rgba(88, 110, 239, 0.9)' }]}>
+           <LottieView
+            source={require('../assets/lottie/success.json')}
+            autoPlay
+            loop={false}
+            style={styles.lottie}
+            pointerEvents="none"
+          />
+          <Animated.View 
+            entering={SlideInUp.springify()}
+            style={[styles.achievementCard, { backgroundColor: '#FFFFFF' }]}
+          >
+            <View style={[styles.iconCircle, { borderColor: '#586EEF' }]}>
+                <Ionicons name="trending-up" size={60} color="#586EEF" />
+            </View>
+            <Text style={[styles.congratsText, { color: '#586EEF' }]}>Level Up!</Text>
+            <Text style={styles.achievementName}>Seviye {levelUpQueue[0]}</Text>
+            <Text style={styles.achievementDesc}>Harika gidiyorsun! Yeni hedeflere doğru...</Text>
+            <View style={[styles.rewardBadge, { backgroundColor: '#10B981' }]}>
+                <Text style={styles.rewardText}>Unlocked Rewards</Text>
             </View>
           </Animated.View>
         </View>

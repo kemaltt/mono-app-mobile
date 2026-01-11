@@ -29,7 +29,12 @@ export const addXP = async (
       unlockedAchievements = await checkAchievements(userId);
     }
 
-    return { xp: newXP, level: newLevel, unlockedAchievements };
+    return {
+      xp: newXP,
+      level: newLevel,
+      gainedXP: amount,
+      unlockedAchievements,
+    };
   } catch (error) {
     console.error("XP Gain Error:", error);
     return { xp: 0, level: 1, unlockedAchievements: [] };
