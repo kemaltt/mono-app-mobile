@@ -272,13 +272,16 @@ auth.post(
         return c.json({ error: "Invalid credentials" }, 401);
       }
 
-      // Update Timezone if changed
+      // Update Timezone & Last Login
+      const updateData: any = { lastLoginAt: new Date() };
       if (timezone && user.timezone !== timezone) {
-        user = await prisma.user.update({
-          where: { id: user.id },
-          data: { timezone },
-        });
+        updateData.timezone = timezone;
       }
+
+      user = await prisma.user.update({
+        where: { id: user.id },
+        data: updateData,
+      });
 
       const token = await sign(
         { id: user.id, email: user.email, role: (user as any).role },

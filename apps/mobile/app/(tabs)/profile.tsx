@@ -99,7 +99,8 @@ export default function ProfileScreen() {
       title: t('profile.notifications'), 
       subtitle: t('profile.notificationsSubtitle'), 
       icon: 'notifications-outline', 
-      onPress: () => {} 
+      onPress: () => router.push('/profile/notifications'),
+      badge: user?.unreadNotificationsCount || 0
     },
     { 
       id: 'profile', 
@@ -229,7 +230,14 @@ export default function ProfileScreen() {
                 <Ionicons name={card.icon} size={24} color={colors.text} />
               </View>
               <View style={styles.cardTextWrapper}>
-                <Text style={[styles.cardTitle, { color: colors.text }]}>{card.title}</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <Text style={[styles.cardTitle, { color: colors.text }]}>{card.title}</Text>
+                  {card.badge > 0 && (
+                    <View style={styles.badge}>
+                        <Text style={styles.badgeText}>{card.badge}</Text>
+                    </View>
+                  )}
+                </View>
                 <Text style={styles.cardSubtitle} numberOfLines={1}>{card.subtitle}</Text>
               </View>
             </TouchableOpacity>
@@ -404,5 +412,19 @@ const styles = StyleSheet.create({
       color: 'white',
       fontSize: 12,
       fontWeight: '700',
+  },
+  badge: {
+    backgroundColor: '#EF4444',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 10,
+    minWidth: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  badgeText: {
+    color: '#white',
+    fontSize: 10,
+    fontWeight: '800',
   }
 });

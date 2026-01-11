@@ -575,6 +575,12 @@ app.post("/", zValidator("json", createTransactionSchema), async (c) => {
       return transaction;
     });
 
+    // Update user's lastTransactionAt
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { lastTransactionAt: new Date() },
+    });
+
     // Award XP for creating transaction
     const reward = await addXP(user.id, 10);
 

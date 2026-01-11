@@ -43,10 +43,16 @@ profile.get("/me", async (c) => {
   const diffTime = endsAt.getTime() - now.getTime();
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
+  // Add unread notification count
+  const unreadNotificationsCount = await prisma.notification.count({
+    where: { userId: payload.id, isRead: false },
+  });
+
   return c.json({
     ...safeUser,
     trialExpired: isExpired,
     trialDaysLeft: Math.max(0, diffDays),
+    unreadNotificationsCount,
   });
 });
 
@@ -331,5 +337,29 @@ profile.get("/achievements", async (c) => {
     return c.json({ error: "Failed to fetch achievements" }, 500);
   }
 });
+
+// UPDATE PUSH TOKEN
+const pushTokenSchema = z.object({
+  token: z.string().startsWith("ExponentPushToken"),
+});
+
+profile.post(
+  "/push-token",
+  zValidator("json", pushTokenSchema, (result, c) => {
+    if (!result.success)
+      return c.json({ error: "Invalid Expo push token" }, 400);
+  }),
+  async (c) => {
+    const payload = c.get("jwtPayload");
+    const { token } = c.req.valid("json");
+
+    await prisma.user.update({
+      where: { id: payload.id },
+      data: { pushToken: token },
+    });
+
+    return c.json({ message: "Push token updated" });
+  }
+);
 
 export default profile;

@@ -78,9 +78,24 @@ export default function RootLayout() {
   );
 }
 
+import { registerForPushNotificationsAsync, savePushTokenToServer } from '../utils/notifications';
+import { API_URL } from '../constants/Config';
+
 function RootLayoutContent() {
   const { colorScheme } = useTheme();
-  const { isLoading } = useAuth();
+  const { isLoading, user, token } = useAuth();
+
+  useEffect(() => {
+    if (user && token) {
+      const registerPush = async () => {
+        const pushToken = await registerForPushNotificationsAsync();
+        if (pushToken) {
+          await savePushTokenToServer(pushToken, API_URL, token);
+        }
+      };
+      registerPush();
+    }
+  }, [user, token]);
 
 
   return useMemo(() => (
