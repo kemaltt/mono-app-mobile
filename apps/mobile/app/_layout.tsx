@@ -85,13 +85,20 @@ import { API_URL } from '../constants/Config';
 function RootLayoutContent() {
   const { colorScheme } = useTheme();
   const { isLoading, user, token, refreshUser } = useAuth();
+  const lastRegisteredToken = React.useRef<string | null>(null);
 
   useEffect(() => {
     if (user && token) {
       const registerPush = async () => {
-        const pushToken = await registerForPushNotificationsAsync();
-        if (pushToken) {
-          await savePushTokenToServer(pushToken, API_URL, token);
+        try {
+          const pushToken = await registerForPushNotificationsAsync();
+          if (pushToken && pushToken !== lastRegisteredToken.current) {
+            await savePushTokenToServer(pushToken, API_URL, token);
+            lastRegisteredToken.current = pushToken;
+            console.log('Push token successfully registered and cached.');
+          }
+        } catch (error) {
+          console.error('Push registration error:', error);
         }
       };
       registerPush();
@@ -106,7 +113,7 @@ function RootLayoutContent() {
         subscription.remove();
       };
     }
-  }, [user, token, refreshUser]);
+  }, [user?.id, token, refreshUser]); // Use user.id to avoid running on every user object change
 
 
   return useMemo(() => (

@@ -25,6 +25,10 @@
   - **Trial, Pro, & Ultimate:** Selective access to AI features with daily scanning limits.
 - **Security & Privacy:**
   - **Account Protection:** 30-day account deletion grace period with easy recovery options.
+- **Real-time Notifications:**
+  - **In-App Notification Center:** Persistent alert history with "mark as read" functionality.
+  - **Push Notifications:** Foreground & background alerts via Expo Push API.
+  - **Interactive UI:** Dynamic swinging bell animation and modern premium notification badges.
 - **Multi-Language:** Seamless switching between Turkish, English, and German.
 - **Secure:** Data validation with Zod and full type-safety across the stack.
 
@@ -39,7 +43,9 @@
 - **Navigation:** Expo Router (File-based routing)
 - **Internationalization:** i18next (Supports 🇹🇷 Turkish, 🇬🇧 English, 🇩🇪 German)
 - **State:** React Context API (Auth, Theme)
-- **Date Handling:** native-community/datetimepicker
+- **Animations:** [React Native Reanimated](https://docs.swmansion.com/react-native-reanimated/) (Animated Bell)
+- **Notifications:** [Expo Notifications](https://docs.expo.dev/versions/latest/sdk/notifications/)
+- **Date Handling:** native-community/datetimepicker & date-fns
 
 ### Backend API (`apps/api`)
 
@@ -49,6 +55,7 @@
 - **AI Integration:** Google Gemini (Generative AI)
 - **Auth:** JWT & Argon2
 - **Email:** Nodemailer (For verifications and reminders)
+- **Push Engine:** CRON-based engagement reminders and automated notify-on-history.
 
 ---
 
@@ -118,6 +125,7 @@ npm run android # For Android Emulator
 
 - **AI Expansion:** Integrated Google Gemini for high-accuracy receipt scanning and personalized spending insights.
 - **Gamification Engine:** Launched the Level/XP system to reward consistent financial tracking.
+- **Notification Center:** Launched full persistent history with real-time unread badges and an interactive animated notification bell.
 - **Financial Suite:** Added dedicated modules for Budget Management, Subscription Tracking, and Debt/Loan logs.
 - **Multi-Tier Membership:** Implemented Trial, Pro, and Ultimate plans with dedicated daily AI limits and modals.
 - **Security & UX:** Added self-service account deletion/recovery and biometric login support.
