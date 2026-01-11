@@ -109,10 +109,15 @@ export default function AddTransactionScreen() {
         });
 
         const data = await response.json();
+        console.log('Scan Response Status:', response.status);
+        console.log('Scan Response Data:', data);
 
-        if (response.status === 403 && data.limitReached) {
-            setLimitMessage(data.message);
-            setLimitModalVisible(true);
+        if (response.status === 403) {
+            const msg = data.limitReached ? t('common.aiLimitMessage') : (data.trialExpired ? t('auth.trialExpiredMessage') : (data.message || data.error));
+            setTimeout(() => {
+                setLimitMessage(msg);
+                setLimitModalVisible(true);
+            }, 500);
             return;
         }
 

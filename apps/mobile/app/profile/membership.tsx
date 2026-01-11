@@ -23,11 +23,11 @@ export default function MembershipScreen() {
       id: 'TRIAL',
       name: t('profile.trial'),
       price: '$0',
-      period: t('common.forever') || 'Free',
+      period: t('profile.forever'),
       features: [
-        '10 AI Scans / day',
-        'Basic statistics',
-        'Standard support'
+        `10 ${t('profile.scansPerDay')}`,
+        t('profile.basicStats'),
+        t('profile.standardSupport')
       ],
       color: '#64748B',
       isCurrent: user?.licenseTier === 'TRIAL'
@@ -36,12 +36,12 @@ export default function MembershipScreen() {
       id: 'PRO',
       name: t('profile.pro'),
       price: '$9.99',
-      period: '/ month',
+      period: `/ ${t('profile.month')}`,
       features: [
-        '100 AI Scans / day',
-        'Advanced AI insights',
-        'Custom categories',
-        'Priority support'
+        `100 ${t('profile.scansPerDay')}`,
+        t('profile.advancedInsights'),
+        t('profile.customCategories'),
+        t('profile.prioritySupport')
       ],
       color: '#586EEF',
       isCurrent: user?.licenseTier === 'PRO'
@@ -50,12 +50,12 @@ export default function MembershipScreen() {
       id: 'ULTIMATE',
       name: t('profile.ultimate'),
       price: '$24.99',
-      period: '/ month',
+      period: `/ ${t('profile.month')}`,
       features: [
-        'Unlimited AI Scans',
-        'Full financial reports',
-        'Family sharing',
-        'Personal advisor'
+        t('profile.unlimitedScans'),
+        t('profile.fullReports'),
+        t('profile.familySharing'),
+        t('profile.personalAdvisor')
       ],
       color: '#10B981',
       isCurrent: user?.licenseTier === 'ULTIMATE'
@@ -109,8 +109,8 @@ export default function MembershipScreen() {
       }} />
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        <Text style={[styles.title, { color: colors.text }]}>Choose Your Plan</Text>
-        <Text style={[styles.subtitle, { color: colors.subtext }]}>Upgrade to unlock more daily AI scans and premium features.</Text>
+        <Text style={[styles.title, { color: colors.text }]}>{t('profile.choosePlan')}</Text>
+        <Text style={[styles.subtitle, { color: colors.subtext }]}>{t('profile.choosePlanSubtitle')}</Text>
 
         {plans.map((plan) => (
           <View 
@@ -122,7 +122,7 @@ export default function MembershipScreen() {
           >
             {plan.isCurrent && (
                 <View style={[styles.currentBadge, { backgroundColor: plan.color }]}>
-                    <Text style={styles.currentBadgeText}>Current Plan</Text>
+                    <Text style={styles.currentBadgeText}>{t('profile.currentPlan')}</Text>
                 </View>
             )}
             
@@ -157,7 +157,7 @@ export default function MembershipScreen() {
                 {loading === plan.id ? (
                   <ActivityIndicator color="white" />
                 ) : (
-                  <Text style={styles.upgradeBtnText}>Upgrade Now</Text>
+                  <Text style={styles.upgradeBtnText}>{t('auth.upgradeNow')}</Text>
                 )}
               </TouchableOpacity>
             )}

@@ -118,15 +118,18 @@ app.post("/scan", async (c) => {
     return c.json({ error: "No file provided" }, 400);
   }
 
-  // Check AI Usage Limit
   const usageCheck = await checkAndIncrementAiUsage(user.id);
   if (!usageCheck.allowed) {
     return c.json(
       {
-        error: "Daily AI usage limit reached!",
-        limitReached: true,
-        message:
-          "You have reached your daily AI limit. Please upgrade your membership for unlimited usage.",
+        error: usageCheck.trialExpired
+          ? "Trial expired"
+          : "Daily AI usage limit reached!",
+        limitReached: usageCheck.limitReached,
+        trialExpired: usageCheck.trialExpired,
+        message: usageCheck.trialExpired
+          ? "Your trial has ended. Please upgrade to continue."
+          : "You have reached your daily AI limit. Please upgrade your membership for unlimited usage.",
       },
       403
     );
@@ -409,10 +412,12 @@ app.get("/stats/ai-summary", async (c) => {
     if (!usageCheck.allowed) {
       return c.json(
         {
-          error: "Daily AI usage limit reached!",
-          limitReached: true,
-          message:
-            "You have reached your daily AI limit. Please upgrade your membership for unlimited usage.",
+          error: usageCheck.trialExpired ? "Trial expired" : "AI Limit reached",
+          limitReached: usageCheck.limitReached,
+          trialExpired: usageCheck.trialExpired,
+          message: usageCheck.trialExpired
+            ? "Your trial has ended. Please upgrade."
+            : "Daily limit reached.",
         },
         403
       );

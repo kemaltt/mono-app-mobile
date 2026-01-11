@@ -15,6 +15,8 @@
     "confirmPassword": "Confirm Password",
     "aiLimitTitle": "Daily Limit Reached",
     "aiLimitMessage": "You have reached your daily AI limit. Please upgrade your membership for unlimited usage.",
+    "trialExpiredTitle": "Trial Expired",
+    "trialExpiredMessage": "Your 30-day trial has ended. Please upgrade to a Pro or Ultimate plan to continue using AI features.",
     "upgradeNow": "Upgrade Membership",
     "maybeLater": "Maybe Later"
   },
@@ -123,7 +125,22 @@
     "pro": "Pro",
     "ultimate": "Ultimate",
     "expiresIn": "Expires in",
-    "days": "days"
+    "days": "days",
+    "choosePlan": "Choose Your Plan",
+    "choosePlanSubtitle": "Upgrade to unlock more daily AI scans and premium features.",
+    "currentPlan": "Current Plan",
+    "scansPerDay": "AI Scans / day",
+    "unlimitedScans": "Unlimited AI Scans",
+    "basicStats": "Basic statistics",
+    "advancedInsights": "Advanced AI insights",
+    "fullReports": "Full financial reports",
+    "standardSupport": "Standard support",
+    "prioritySupport": "Priority support",
+    "personalAdvisor": "Personal advisor",
+    "customCategories": "Custom categories",
+    "familySharing": "Family sharing",
+    "month": "month",
+    "forever": "forever"
   },
   "statistics": {
     "title": "Statistics",

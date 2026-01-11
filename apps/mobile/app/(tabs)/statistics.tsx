@@ -50,8 +50,8 @@ export default function StatisticsScreen() {
       });
       const aiData = await aiRes.json();
       
-      if (aiRes.status === 403 && aiData.limitReached) {
-          setLimitMessage(aiData.message);
+      if (aiRes.status === 403 && (aiData.limitReached || aiData.trialExpired)) {
+          setLimitMessage(aiData.trialExpired ? t('auth.trialExpiredMessage') : t('common.aiLimitMessage'));
           setLimitModalVisible(true);
           return;
       }

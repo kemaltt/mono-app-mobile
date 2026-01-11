@@ -6,9 +6,12 @@ export const AI_LIMITS = {
   ULTIMATE: 1000000, // Practically unlimited
 };
 
-export async function checkAndIncrementAiUsage(
-  userId: string
-): Promise<{ allowed: boolean; remaining: number }> {
+export async function checkAndIncrementAiUsage(userId: string): Promise<{
+  allowed: boolean;
+  remaining: number;
+  trialExpired?: boolean;
+  limitReached?: boolean;
+}> {
   const user = await prisma.user.findUnique({
     where: { id: userId },
     select: {
@@ -28,7 +31,7 @@ export async function checkAndIncrementAiUsage(
   // Check trial expiration
   if (user.licenseTier === "TRIAL" && user.trialEndsAt) {
     if (now > new Date(user.trialEndsAt)) {
-      return { allowed: false, remaining: 0 };
+      return { allowed: false, remaining: 0, trialExpired: true };
     }
   }
 
@@ -55,7 +58,7 @@ export async function checkAndIncrementAiUsage(
 
   // Check if limit is reached
   if (user.aiUsageCount >= limit) {
-    return { allowed: false, remaining: 0 };
+    return { allowed: false, remaining: 0, limitReached: true };
   }
 
   // Increment count
