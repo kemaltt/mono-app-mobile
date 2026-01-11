@@ -78,12 +78,13 @@ export default function RootLayout() {
   );
 }
 
+import * as Notifications from 'expo-notifications';
 import { registerForPushNotificationsAsync, savePushTokenToServer } from '../utils/notifications';
 import { API_URL } from '../constants/Config';
 
 function RootLayoutContent() {
   const { colorScheme } = useTheme();
-  const { isLoading, user, token } = useAuth();
+  const { isLoading, user, token, refreshUser } = useAuth();
 
   useEffect(() => {
     if (user && token) {
@@ -94,8 +95,18 @@ function RootLayoutContent() {
         }
       };
       registerPush();
+
+      // Listen for foreground notifications to refresh badge count
+      const subscription = Notifications.addNotificationReceivedListener(notification => {
+        console.log('Notification received in foreground:', notification);
+        refreshUser();
+      });
+
+      return () => {
+        subscription.remove();
+      };
     }
-  }, [user, token]);
+  }, [user, token, refreshUser]);
 
 
   return useMemo(() => (
