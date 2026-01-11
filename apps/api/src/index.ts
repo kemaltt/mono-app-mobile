@@ -34,11 +34,21 @@ app.route("/membership", membership);
 app.route("/admin", admin);
 app.route("/notifications", notifications);
 
-const port = 4040;
-console.log(`Server is running on port ${port}`);
+import { handle } from "hono/vercel";
 
-serve({
-  fetch: app.fetch,
-  port,
-  hostname: "0.0.0.0",
-});
+// ... (existing imports)
+
+// ... (existing app setup)
+
+const port = 4040;
+
+if (process.env.NODE_ENV !== "production" && !process.env.VERCEL) {
+  console.log(`Server is running on port ${port}`);
+  serve({
+    fetch: app.fetch,
+    port,
+    hostname: "0.0.0.0",
+  });
+}
+
+export default app;
