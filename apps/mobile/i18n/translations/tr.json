@@ -12,7 +12,11 @@
     "success": "Başarılı",
     "clickToOpen": "Açmak için tıklayın",
     "confirm": "Onayla",
-    "confirmPassword": "Şifreyi Onayla"
+    "confirmPassword": "Şifreyi Onayla",
+    "aiLimitTitle": "Günlük Limit Doldu",
+    "aiLimitMessage": "Günlük yapay zeka kullanım sınırınıza ulaştınız. Sınırsız kullanım için lütfen üyeliğinizi yükseltin.",
+    "upgradeNow": "Üyeliği Yükselt",
+    "maybeLater": "Belki Daha Sonra"
   },
   "onboarding": {
     "title1": "Daha Akıllıca Harca",
@@ -113,7 +117,13 @@
     "profileSubtitle": "İsim, Profil Resmi...",
     "accountSubtitle": "Veriler, Güvenlik, Plus...",
     "notificationsSubtitle": "0 yeni",
-    "settingsSubtitle": "Dil, Tasarım..."
+    "settingsSubtitle": "Dil ve güvenlik",
+    "membership": "Üyelik",
+    "trial": "Deneme",
+    "pro": "Pro",
+    "ultimate": "Ultimate",
+    "expiresIn": "Kalan süre",
+    "days": "gün"
   },
   "statistics": {
     "title": "İstatistikler",

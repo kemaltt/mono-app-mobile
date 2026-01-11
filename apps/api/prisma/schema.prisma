@@ -34,9 +34,21 @@ model User {
   status          UserStatus @default(ACTIVE)
   deleteRequestDate DateTime?
   deleteCode      String?    // OTP for deletion confirmation or undo
+  // License & AI Usage
+  licenseTier     LicenseTier @default(TRIAL)
+  trialEndsAt     DateTime?
+  aiUsageCount    Int         @default(0)
+  aiUsageResetAt  DateTime    @default(now())
+
   // AI Caching
   aiSummary       String?
   aiSummaryAt     DateTime?
+}
+
+enum LicenseTier {
+  TRIAL     // 10 AI queries/day
+  PRO       // e.g. 100 queries/day or unlimited
+  ULTIMATE  // Unlimited
 }
 
 enum UserStatus {

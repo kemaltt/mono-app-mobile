@@ -176,6 +176,32 @@ export default function ProfileScreen() {
                 <View style={[styles.xpBarFill, { width: `${Math.min(((user?.xp || 0) % 100), 99)}%` }]} />
             </View>
           </View>
+
+          {/* Membership Status */}
+          <TouchableOpacity 
+            style={[styles.membershipCard, { backgroundColor: colorScheme === 'dark' ? '#1E293B' : '#FFFFFF', borderColor: colorScheme === 'dark' ? '#334155' : '#EEF2FF' }]}
+            onPress={() => {
+                 router.push('/profile/membership');
+            }}
+          >
+            <View style={styles.membershipIcon}>
+              <Ionicons name="diamond" size={24} color="#586EEF" />
+            </View>
+            <View style={{ flex: 1, marginLeft: 12 }}>
+              <Text style={[styles.membershipLabel, { color: colors.subtext }]}>{t('profile.membership')}</Text>
+              <Text style={[styles.membershipTier, { color: colors.text }]}>
+                {user?.licenseTier === 'TRIAL' ? t('profile.trial') : (user?.licenseTier === 'PRO' ? t('profile.pro') : t('profile.ultimate'))}
+              </Text>
+            </View>
+            {user?.licenseTier === 'TRIAL' && user?.trialEndsAt && (
+                <View style={styles.trialBadge}>
+                    <Text style={styles.trialBadgeText}>
+                        {Math.ceil((new Date(user.trialEndsAt).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))} {t('profile.days')}
+                    </Text>
+                </View>
+            )}
+            <Ionicons name="chevron-forward" size={20} color={colors.subtext} />
+          </TouchableOpacity>
         </View>
 
         <View style={styles.gridContainer}>
@@ -326,8 +352,50 @@ const styles = StyleSheet.create({
       overflow: 'hidden',
   },
   xpBarFill: {
-      height: '100%',
       backgroundColor: '#586EEF',
       borderRadius: 4,
+  },
+  membershipCard: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginTop: 15,
+      padding: 16,
+      borderRadius: 20,
+      borderWidth: 1,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.05,
+      shadowRadius: 12,
+      elevation: 2,
+  },
+  membershipIcon: {
+      width: 44,
+      height: 44,
+      borderRadius: 12,
+      backgroundColor: '#EEF2FF',
+      justifyContent: 'center',
+      alignItems: 'center',
+  },
+  membershipLabel: {
+      fontSize: 12,
+      fontWeight: '500',
+      marginBottom: 2,
+      textTransform: 'uppercase',
+  },
+  membershipTier: {
+      fontSize: 18,
+      fontWeight: '700',
+  },
+  trialBadge: {
+      backgroundColor: '#586EEF',
+      paddingHorizontal: 10,
+      paddingVertical: 4,
+      borderRadius: 10,
+      marginRight: 10,
+  },
+  trialBadgeText: {
+      color: 'white',
+      fontSize: 12,
+      fontWeight: '700',
   }
 });

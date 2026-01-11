@@ -12,7 +12,11 @@
     "success": "Erfolgreich",
     "clickToOpen": "Klicken zum Öffnen",
     "confirm": "Bestätigen",
-    "confirmPassword": "Passwort bestätigen"
+    "confirmPassword": "Passwort bestätigen",
+    "aiLimitTitle": "Tageslimit erreicht",
+    "aiLimitMessage": "Sie haben Ihr tägliches KI-Limit erreicht. Bitte aktualisieren Sie Ihre Mitgliedschaft für eine unbegrenzte Nutzung.",
+    "upgradeNow": "Mitgliedschaft aktualisieren",
+    "maybeLater": "Vielleicht später"
   },
   "onboarding": {
     "title1": "Intelligenter Ausgeben",
@@ -113,7 +117,13 @@
     "profileSubtitle": "Name, Profilbild...",
     "accountSubtitle": "Daten, Sicherheit, Plus...",
     "notificationsSubtitle": "0 neu",
-    "settingsSubtitle": "Sprache, Design..."
+    "settingsSubtitle": "Sprache, Design...",
+    "membership": "Mitgliedschaft",
+    "trial": "Testversion",
+    "pro": "Pro",
+    "ultimate": "Ultimativ",
+    "expiresIn": "Läuft ab in",
+    "days": "Tagen"
   },
   "statistics": {
     "title": "Statistik",

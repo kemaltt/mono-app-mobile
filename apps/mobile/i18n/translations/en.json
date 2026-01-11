@@ -12,7 +12,11 @@
     "success": "Success",
     "clickToOpen": "Click to open",
     "confirm": "Confirm",
-    "confirmPassword": "Confirm Password"
+    "confirmPassword": "Confirm Password",
+    "aiLimitTitle": "Daily Limit Reached",
+    "aiLimitMessage": "You have reached your daily AI limit. Please upgrade your membership for unlimited usage.",
+    "upgradeNow": "Upgrade Membership",
+    "maybeLater": "Maybe Later"
   },
   "onboarding": {
     "title1": "Spend Smarter",
@@ -113,7 +117,13 @@
     "profileSubtitle": "Name, Profile Picture...",
     "accountSubtitle": "Data, Security, Plus...",
     "notificationsSubtitle": "0 new",
-    "settingsSubtitle": "Language, Design..."
+    "settingsSubtitle": "Language and security",
+    "membership": "Membership",
+    "trial": "Trial",
+    "pro": "Pro",
+    "ultimate": "Ultimate",
+    "expiresIn": "Expires in",
+    "days": "days"
   },
   "statistics": {
     "title": "Statistics",

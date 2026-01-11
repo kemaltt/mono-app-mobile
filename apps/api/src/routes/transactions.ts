@@ -5,6 +5,7 @@ import { verify } from "hono/jwt";
 import prisma from "../lib/prisma";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { addXP, unlockAchievement } from "../lib/gamification";
+import { checkAndIncrementAiUsage } from "../lib/ai-limit";
 
 const JWT_SECRET = process.env.JWT_SECRET || "supersecretkeyshouldbehidden";
 
@@ -115,6 +116,20 @@ app.post("/scan", async (c) => {
 
   if (!file) {
     return c.json({ error: "No file provided" }, 400);
+  }
+
+  // Check AI Usage Limit
+  const usageCheck = await checkAndIncrementAiUsage(user.id);
+  if (!usageCheck.allowed) {
+    return c.json(
+      {
+        error: "Daily AI usage limit reached!",
+        limitReached: true,
+        message:
+          "You have reached your daily AI limit. Please upgrade your membership for unlimited usage.",
+      },
+      403
+    );
   }
 
   const apiKey = process.env.GEMINI_API_KEY;
@@ -387,6 +402,20 @@ app.get("/stats/ai-summary", async (c) => {
       if (diff < cacheThreshold) {
         return c.json({ summary: dbUser.aiSummary, cached: true });
       }
+    }
+
+    // Cache missed or expired, check AI usage limit before calling Gemini
+    const usageCheck = await checkAndIncrementAiUsage(user.id);
+    if (!usageCheck.allowed) {
+      return c.json(
+        {
+          error: "Daily AI usage limit reached!",
+          limitReached: true,
+          message:
+            "You have reached your daily AI limit. Please upgrade your membership for unlimited usage.",
+        },
+        403
+      );
     }
 
     const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);

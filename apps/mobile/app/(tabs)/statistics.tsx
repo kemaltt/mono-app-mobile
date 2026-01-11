@@ -10,6 +10,7 @@ import { API_URL } from '../../constants/Config';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../context/theme';
 import { Colors } from '../../constants/theme';
+import AiLimitModal from '../../components/AiLimitModal';
 
 const { width } = Dimensions.get('window');
 
@@ -37,6 +38,8 @@ export default function StatisticsScreen() {
   const [loadingSummary, setLoadingSummary] = useState(false);
   const [showTypeDropdown, setShowTypeDropdown] = useState(false);
   const [selectedTransactionId, setSelectedTransactionId] = useState<string | null>(null);
+  const [limitModalVisible, setLimitModalVisible] = useState(false);
+  const [limitMessage, setLimitMessage] = useState('');
 
   const fetchAiSummary = useCallback(async () => {
     if (!token) return;
@@ -46,6 +49,13 @@ export default function StatisticsScreen() {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const aiData = await aiRes.json();
+      
+      if (aiRes.status === 403 && aiData.limitReached) {
+          setLimitMessage(aiData.message);
+          setLimitModalVisible(true);
+          return;
+      }
+
       setAiSummary(aiData.summary || '');
     } catch (error) {
       console.error(error);
@@ -366,6 +376,16 @@ export default function StatisticsScreen() {
           )}
         </View>
       </ScrollView>
+
+        <AiLimitModal 
+            isVisible={limitModalVisible}
+            onClose={() => setLimitModalVisible(false)}
+            onUpgrade={() => {
+                setLimitModalVisible(false);
+                router.push('/profile/membership');
+            }}
+            message={limitMessage}
+        />
     </SafeAreaView>
   );
 }

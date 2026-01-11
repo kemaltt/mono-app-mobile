@@ -29,6 +29,7 @@ import { API_URL } from '../../constants/Config';
 import * as ImagePicker from 'expo-image-picker';
 import * as DocumentPicker from 'expo-document-picker';
 import Toast from 'react-native-toast-message';
+import AiLimitModal from '../../components/AiLimitModal';
 
 const { width } = Dimensions.get('window');
 
@@ -48,6 +49,8 @@ export default function AddTransactionScreen() {
   const [type, setType] = useState<'INCOME' | 'EXPENSE'>('EXPENSE');
   const [loading, setLoading] = useState(false);
   const [focusedField, setFocusedField] = useState<string | null>(null);
+  const [limitModalVisible, setLimitModalVisible] = useState(false);
+  const [limitMessage, setLimitMessage] = useState('');
   const [attachment, setAttachment] = useState<any>(null);
   const [uploadingAttachment, setUploadingAttachment] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
@@ -106,6 +109,12 @@ export default function AddTransactionScreen() {
         });
 
         const data = await response.json();
+
+        if (response.status === 403 && data.limitReached) {
+            setLimitMessage(data.message);
+            setLimitModalVisible(true);
+            return;
+        }
 
         if (response.ok) {
             setAmount(data.amount?.toString() || '');
@@ -198,6 +207,15 @@ export default function AddTransactionScreen() {
     setDate(currentDate);
   };
 
+  const resetForm = () => {
+    setAmount('');
+    setCategory('');
+    setDescription('');
+    setDate(new Date());
+    setAttachment(null);
+    setType('EXPENSE');
+  };
+
   const handleSubmit = async () => {
     if (!amount || !category) {
         Alert.alert(t('common.error'), t('add.errorFill'));
@@ -252,6 +270,9 @@ export default function AddTransactionScreen() {
         if (data.xp !== undefined && data.level !== undefined) {
             updateUser({ ...authUser, xp: data.xp, level: data.level });
         }
+
+        // Reset state before leaving
+        resetForm();
 
         setTimeout(() => {
             router.replace('/(tabs)/home');
@@ -503,6 +524,17 @@ export default function AddTransactionScreen() {
               </TouchableOpacity>
             </View>
           </ScrollView>
+            {/* ... Other modals */}
+
+            <AiLimitModal 
+                isVisible={limitModalVisible}
+                onClose={() => setLimitModalVisible(false)}
+                onUpgrade={() => {
+                    setLimitModalVisible(false);
+                    router.push('/profile/membership');
+                }}
+                message={limitMessage}
+            />
         </KeyboardAvoidingView>
       </View>
       <Modal
