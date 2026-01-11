@@ -129,10 +129,6 @@ export default function LoginScreen() {
 
       await signIn(data.token, data.user);
       
-      // Save credentials for biometrics
-      await SecureStore.setItemAsync('user_email', finalEmail);
-      await SecureStore.setItemAsync('user_password', loginPass);
-      
     } catch (err: any) {
       const message = typeof err.message === 'object' ? 'An unexpected error occurred' : err.message;
       Toast.show({
