@@ -140,7 +140,10 @@
     "customCategories": "Benutzerdefinierte Kategorien",
     "familySharing": "Familienfreigabe",
     "month": "Monat",
-    "forever": "für immer"
+    "forever": "für immer",
+    "adminPanel": "Admin-Dashboard",
+    "adminPanelSubtitle": "Benutzer & Statistiken verwalten",
+    "admin": "Admin"
   },
   "statistics": {
     "title": "Statistik",
@@ -289,5 +292,38 @@
     "desc_budget_planner": "3 verschiedene Budgets erstellt",
     "badge_ai_scanner": "KI-Visionär",
     "desc_ai_scanner": "Haben Ihren ersten Beleg mit Gemini KI gescannt"
+  },
+  "admin": {
+    "totalUsers": "Benutzer gesamt",
+    "proUsers": "Pro-Benutzer",
+    "trialUsers": "Trial-Benutzer",
+    "ultimateUsers": "Ultimate-Benutzer",
+    "aiScansTotal": "AI-Scans/Gesamt",
+    "allUsers": "Alle Benutzer",
+    "recentUsers": "Neueste Benutzer",
+    "users": "Benutzer",
+    "management": "Verwaltung",
+    "licenseTier": "Lizenzstufe",
+    "userStatus": "Benutzerstatus",
+    "role": "Rolle",
+    "aiUsageToday": "AI-Nutzung (Heute)",
+    "emailVerified": "E-Mail verifiziert",
+    "trialExpiresAt": "Trial läuft ab am",
+    "applyChanges": "Änderungen anwenden",
+    "viewFullProfile": "Vollständiges Profil ansehen",
+    "makePro": "Zu PRO machen",
+    "makeUltimate": "Zu ULTIMATE machen",
+    "extendTrial7": "Trial verlängern (7 Tage)",
+    "removeAdmin": "Admin entfernen",
+    "makeAdmin": "Zum Admin machen",
+    "joined": "Beigetreten am",
+    "level": "Level",
+    "xp": "XP",
+    "updateSuccess": "Benutzer erfolgreich aktualisiert",
+    "updateError": "Aktualisierung fehlgeschlagen",
+    "accessDenied": "Zugriff verweigert",
+    "refreshPermissions": "Bitte loggen Sie sich aus und wieder ein, um Ihre Admin-Berechtigungen zu aktualisieren.",
+    "userDetail": "Benutzerdetails",
+    "clear": "Leeren"
   }
 }

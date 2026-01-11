@@ -140,7 +140,10 @@
     "customCategories": "Custom categories",
     "familySharing": "Family sharing",
     "month": "month",
-    "forever": "forever"
+    "forever": "forever",
+    "adminPanel": "Admin Dashboard",
+    "adminPanelSubtitle": "Manage users & stats",
+    "admin": "Admin"
   },
   "statistics": {
     "title": "Statistics",
@@ -289,5 +292,38 @@
     "desc_budget_planner": "Created 3 different budgets",
     "badge_ai_scanner": "AI Visionary",
     "desc_ai_scanner": "Scanned your first receipt with Gemini AI"
+  },
+  "admin": {
+    "totalUsers": "Total Users",
+    "proUsers": "Pro Users",
+    "trialUsers": "Trial Users",
+    "ultimateUsers": "Ultimate Users",
+    "aiScansTotal": "AI Scans/Total",
+    "allUsers": "All Users",
+    "recentUsers": "Recent Users",
+    "users": "Users",
+    "management": "Management",
+    "licenseTier": "License Tier",
+    "userStatus": "User Status",
+    "role": "Role",
+    "aiUsageToday": "AI Usage Count (Today)",
+    "emailVerified": "Email Verified",
+    "trialExpiresAt": "Trial Expires At",
+    "applyChanges": "Apply Changes",
+    "viewFullProfile": "View Full Profile",
+    "makePro": "Make PRO",
+    "makeUltimate": "Make ULTIMATE",
+    "extendTrial7": "Extend Trial (7 Days)",
+    "removeAdmin": "Remove Admin",
+    "makeAdmin": "Make Admin",
+    "joined": "Joined",
+    "level": "Level",
+    "xp": "XP",
+    "updateSuccess": "User updated successfully",
+    "updateError": "Update failed",
+    "accessDenied": "Access Denied",
+    "refreshPermissions": "Please log out and log in again to refresh your admin permissions.",
+    "userDetail": "User Detail",
+    "clear": "Clear"
   }
 }

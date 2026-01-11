@@ -140,7 +140,10 @@
     "customCategories": "Özel kategoriler",
     "familySharing": "Aile paylaşımı",
     "month": "ay",
-    "forever": "sonsuza dek"
+    "forever": "sonsuza dek",
+    "adminPanel": "Admin Paneli",
+    "adminPanelSubtitle": "Kullanıcıları ve istatistikleri yönet",
+    "admin": "Admin"
   },
   "statistics": {
     "title": "İstatistikler",
@@ -289,5 +292,38 @@
     "desc_budget_planner": "3 farklı bütçe oluşturdun",
     "badge_ai_scanner": "Yapay Zeka Vizyoneri",
     "desc_ai_scanner": "İlk fişini Gemini AI ile başarıyla taradın"
+  },
+  "admin": {
+    "totalUsers": "Toplam Kullanıcı",
+    "proUsers": "Pro Kullanıcılar",
+    "trialUsers": "Trial Kullanıcılar",
+    "ultimateUsers": "Ultimate Kullanıcılar",
+    "aiScansTotal": "AI Tarama/Toplam",
+    "allUsers": "Tüm Kullanıcılar",
+    "recentUsers": "Son Kullanıcılar",
+    "users": "Kullanıcılar",
+    "management": "Yönetim",
+    "licenseTier": "Lisans Seviyesi",
+    "userStatus": "Kullanıcı Durumu",
+    "role": "Rol",
+    "aiUsageToday": "AI Kullanım Sayısı (Bugün)",
+    "emailVerified": "E-posta Doğrulandı",
+    "trialExpiresAt": "Trial Bitiş Tarihi",
+    "applyChanges": "Değişiklikleri Uygula",
+    "viewFullProfile": "Tam Profili Görüntüle",
+    "makePro": "PRO Yap",
+    "makeUltimate": "ULTIMATE Yap",
+    "extendTrial7": "Trial Uzat (7 Gün)",
+    "removeAdmin": "Adminliği Kaldır",
+    "makeAdmin": "Admin Yap",
+    "joined": "Katılma Tarihi",
+    "level": "Seviye",
+    "xp": "XP",
+    "updateSuccess": "Kullanıcı başarıyla güncellendi",
+    "updateError": "Güncelleme başarısız",
+    "accessDenied": "Erişim Engellendi",
+    "refreshPermissions": "Lütfen çıkış yapıp tekrar giriş yaparak admin yetkilerinizi yenileyin.",
+    "userDetail": "Kullanıcı Detayı",
+    "clear": "Temizle"
   }
 }

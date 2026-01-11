@@ -149,7 +149,10 @@ auth.post(
         });
       }
 
-      const token = await sign({ id: user.id, email: user.email }, JWT_SECRET);
+      const token = await sign(
+        { id: user.id, email: user.email, role: (updatedUser as any).role },
+        JWT_SECRET
+      );
 
       return c.json({
         message: "Email verified successfully",
@@ -277,7 +280,10 @@ auth.post(
         });
       }
 
-      const token = await sign({ id: user.id, email: user.email }, JWT_SECRET);
+      const token = await sign(
+        { id: user.id, email: user.email, role: (user as any).role },
+        JWT_SECRET
+      );
 
       return c.json({
         token,

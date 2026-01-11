@@ -43,6 +43,12 @@ model User {
   // AI Caching
   aiSummary       String?
   aiSummaryAt     DateTime?
+  role            UserRole   @default(USER)
+}
+
+enum UserRole {
+  USER
+  ADMIN
 }
 
 enum LicenseTier {

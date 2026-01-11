@@ -129,6 +129,13 @@ export default function ProfileScreen() {
       icon: 'trophy-outline', 
       onPress: () => router.push('/profile/achievements') 
     },
+    ...(user?.role === 'ADMIN' ? [{
+      id: 'admin',
+      title: t('profile.adminPanel'),
+      subtitle: t('profile.adminPanelSubtitle'),
+      icon: 'shield-checkmark-outline',
+      onPress: () => router.push('/profile/admin')
+    }] : []),
   ];
 
   return (
