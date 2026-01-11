@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback, useMemo } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter, useSegments, useRootNavigationState } from 'expo-router';
 import * as Localization from 'expo-localization';
@@ -97,28 +97,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [token, segments[0], isLoading, hasSeenOnboarding, navigationState?.key]);
 
-  const signIn = async (newToken: string, newUser: any) => {
+  const signIn = useCallback(async (newToken: string, newUser: any) => {
     setToken(newToken);
     setUser(newUser);
     await AsyncStorage.setItem('token', newToken);
     await AsyncStorage.setItem('user', JSON.stringify(newUser));
-  };
+  }, []);
 
-  const signOut = async () => {
+  const signOut = useCallback(async () => {
     setToken(null);
     setUser(null);
     await AsyncStorage.removeItem('token');
     await AsyncStorage.removeItem('user');
-  };
+  }, []);
 
-  const updateUser = async (newUser: any) => {
+  const updateUser = useCallback(async (newUser: any) => {
     setUser(newUser);
     await AsyncStorage.setItem('user', JSON.stringify(newUser));
-  };
+  }, []);
 
-
-
-  const refreshUser = async () => {
+  const refreshUser = useCallback(async () => {
     if (!token) return;
     try {
       const { API_URL } = require('../constants/Config');
@@ -157,16 +155,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch (e) {
       console.error('Failed to refresh user', e);
     }
-  };
+  }, [token, updateUser]);
 
-  const completeOnboarding = async () => {
+  const completeOnboarding = useCallback(async () => {
     setHasSeenOnboarding(true);
     await AsyncStorage.setItem('hasSeenOnboarding', 'true');
-    // Navigation will be handled by useEffect
-  };
+  }, []);
+
+  const contextValue = React.useMemo(() => ({
+    token,
+    user,
+    isLoading,
+    hasSeenOnboarding,
+    signIn,
+    signOut,
+    updateUser,
+    refreshUser,
+    completeOnboarding
+  }), [token, user, isLoading, hasSeenOnboarding, signIn, signOut, updateUser, refreshUser, completeOnboarding]);
 
   return (
-    <AuthContext.Provider value={{ token, user, isLoading, hasSeenOnboarding, signIn, signOut, updateUser, refreshUser, completeOnboarding }}>
+    <AuthContext.Provider value={contextValue}>
       {children}
     </AuthContext.Provider>
   );

@@ -1,11 +1,10 @@
 // @ts-nocheck
-import { View, Text, ScrollView, TouchableOpacity, Platform, RefreshControl, StyleSheet, ActivityIndicator, Animated } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Platform, RefreshControl, StyleSheet, ActivityIndicator, Animated, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { Swipeable } from 'react-native-gesture-handler';
 import * as Haptics from 'expo-haptics';
 import { useEffect, useState, useCallback } from 'react';
-import { Image } from 'react-native';
 import { useAuth } from '../../context/auth';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
@@ -14,13 +13,23 @@ import { Colors } from '../../constants/theme';
 import { API_URL } from '../../constants/Config';
 import Toast from 'react-native-toast-message';
 import AiLimitModal from '../../components/AiLimitModal';
+import Reanimated, { 
+  useSharedValue, 
+  useAnimatedStyle, 
+  withRepeat, 
+  withSequence, 
+  withTiming,
+  withDelay,
+  Easing,
+  cancelAnimation
+} from 'react-native-reanimated';
 
 export default function HomeScreen() {
   const { t } = useTranslation();
   const { colorScheme } = useTheme();
   const colors = Colors[colorScheme];
   const router = useRouter();
-  const { user, token } = useAuth();
+  const { user, token, refreshUser } = useAuth();
   const [dashboard, setDashboard] = useState<any>(null);
   const [transactions, setTransactions] = useState<any[]>([]);
   const [refreshing, setRefreshing] = useState(false);
@@ -28,6 +37,33 @@ export default function HomeScreen() {
   const [isBalanceVisible, setIsBalanceVisible] = useState(true);
   const [limitModalVisible, setLimitModalVisible] = useState(false);
   const pulseAnim = useState(new Animated.Value(0.3))[0];
+
+  // Bell Animation
+  const bellRotation = useSharedValue(0);
+
+  useEffect(() => {
+    if (user?.unreadNotificationsCount > 0) {
+      bellRotation.value = withRepeat(
+        withSequence(
+          withTiming(-10, { duration: 100, easing: Easing.bezier(0.33, 1, 0.68, 1) }),
+          withTiming(10, { duration: 100, easing: Easing.bezier(0.33, 1, 0.68, 1) }),
+          withTiming(-10, { duration: 100, easing: Easing.bezier(0.33, 1, 0.68, 1) }),
+          withTiming(10, { duration: 100, easing: Easing.bezier(0.33, 1, 0.68, 1) }),
+          withTiming(0, { duration: 100 }),
+          withDelay(2000, withTiming(0, { duration: 0 }))
+        ),
+        -1, // Loop
+        false
+      );
+    } else {
+      cancelAnimation(bellRotation);
+      bellRotation.value = 0;
+    }
+  }, [user?.unreadNotificationsCount]);
+
+  const bellAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [{ rotate: `${bellRotation.value}deg` }],
+  }));
 
   useEffect(() => {
     if (loading) {
@@ -65,6 +101,9 @@ export default function HomeScreen() {
         const transData = await transRes.json();
         setTransactions(transData.transactions || []);
 
+        // Also refresh user to get unread count
+        refreshUser();
+
         if (isRefreshing) {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
         }
@@ -74,7 +113,7 @@ export default function HomeScreen() {
     } finally {
         setLoading(false);
     }
-  }, [token]);
+  }, [token, refreshUser]);
 
   useFocusEffect(
     useCallback(() => {
@@ -186,8 +225,20 @@ export default function HomeScreen() {
                 </View>
             </View>
         </TouchableOpacity>
-        <TouchableOpacity>
-            <Ionicons name="notifications-outline" size={24} color={colors.text} />
+        <TouchableOpacity 
+          onPress={() => router.push('/profile/notifications')}
+          activeOpacity={0.7}
+        >
+            <Reanimated.View style={bellAnimatedStyle}>
+              <Ionicons name="notifications-outline" size={26} color={colors.text} />
+            </Reanimated.View>
+            {user?.unreadNotificationsCount > 0 && (
+              <View style={styles.notificationBadge}>
+                <Text style={styles.notificationBadgeText}>
+                  {user.unreadNotificationsCount > 9 ? '9+' : user.unreadNotificationsCount}
+                </Text>
+              </View>
+            )}
         </TouchableOpacity>
       </View>
 
@@ -597,5 +648,30 @@ const styles = StyleSheet.create({
   miniWidgetText: {
       fontWeight: '700',
       fontSize: 13,
+  },
+  notificationBadge: {
+    position: 'absolute',
+    right: -2,
+    top: -2,
+    backgroundColor: '#EF4444',
+    minWidth: 18,
+    height: 18,
+    borderRadius: 9,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: 'transparent',
+    // Premium glow effect
+    shadowColor: '#EF4444',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.5,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  notificationBadgeText: {
+    color: 'white',
+    fontSize: 9,
+    fontWeight: '900',
+    textAlign: 'center',
   }
 });
