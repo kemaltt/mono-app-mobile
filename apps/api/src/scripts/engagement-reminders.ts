@@ -22,13 +22,12 @@ async function runEngagementReminders() {
 
   for (const user of inactiveUsers) {
     console.log(`Sending 'Miss you' notification to ${user.email}`);
-    await sendPushNotification({
-      to: user.pushToken!,
-      userId: user.id,
-      title: "Wir vermissen dich! 🤗",
-      body: "Du warst seit 3 Tagen nicht mehr hier. Wie wäre es, wenn du deine Ausgaben überprüfst?",
-      data: { screen: "Dashboard" },
-    });
+    await sendPushNotification(
+      user.id,
+      "Wir vermissen dich! 🤗",
+      "Du warst seit 3 Tagen nicht mehr hier. Wie wäre es, wenn du deine Ausgaben überprüfst?",
+      { screen: "Dashboard" }
+    );
   }
 
   // 2. Transaction Reminder (7 days no transaction)
@@ -46,13 +45,12 @@ async function runEngagementReminders() {
     if (isAlreadyNotified) continue;
 
     console.log(`Sending 'Transaction' reminder to ${user.email}`);
-    await sendPushNotification({
-      to: user.pushToken!,
-      userId: user.id,
-      title: "Vergiss deine Ausgaben nicht! ✍️",
-      body: "Du hast seit einer Woche keine Transaktion mehr eingegeben. Vergiss nicht, deine Einnahmen und Ausgaben zu kontrollieren!",
-      data: { screen: "AddTransaction" },
-    });
+    await sendPushNotification(
+      user.id,
+      "Vergiss deine Ausgaben nicht! ✍️",
+      "Du hast seit einer Woche keine Transaktion mehr eingegeben. Vergiss nicht, deine Einnahmen und Ausgaben zu kontrollieren!",
+      { screen: "AddTransaction" }
+    );
   }
 
   console.log("Engagement Reminders CRON finished.");

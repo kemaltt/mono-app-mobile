@@ -14,13 +14,12 @@ async function sendTestNotification(email: string) {
   }
 
   console.log(`Sending test notification to ${email}...`);
-  await sendPushNotification({
-    to: user.pushToken,
-    userId: user.id,
-    title: "Mono Test Bildirimi 🚀",
-    body: "Selam! Push bildirim sistemimiz başarıyla çalışıyor. Bu bir test mesajıdır. 👋",
-    data: { screen: "Dashboard", test: true },
-  });
+  await sendPushNotification(
+    user.id,
+    "Mono Test Bildirimi 🚀",
+    "Selam! Push bildirim sistemimiz başarıyla çalışıyor. Bu bir test mesajıdır. 👋",
+    { screen: "Dashboard", test: true }
+  );
 
   console.log("Test notification sent successfully!");
 }
