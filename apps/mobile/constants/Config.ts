@@ -4,4 +4,7 @@ import { Platform } from "react-native";
 //   ? 'http://192.168.178.185:4040'
 //   : 'http://192.168.178.29:4040';
 
-export const API_URL = "https://mono-app-mobile.vercel.app";
+export const API_URL =
+  Platform.OS === "android"
+    ? "http://192.168.178.185:4040"
+    : "https://mono-app-mobile.vercel.app";
